@@ -56,14 +56,22 @@
                 d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h440l200 200v440q0 33-23.5 56.5T760-120H200Zm0-80h560v-400H600v-160H200v560Zm80-80h400v-80H280v80Zm0-320h200v-80H280v80Zm0 160h400v-80H280v80Zm-80-320v160-160 560-560Z"/>
           </svg>
         </button>
+        <button v-if="isPRAMode" class="fib-button reset-button" @click="resetPRASession" title="Reset PRA Session">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+            <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/>
+          </svg>
+        </button>
       </div>
 
       <div class="top-left">
         <PFLittleButton type="github" popover-text="Open repo" @clicked="goToGithub()"></PFLittleButton>
         <PFLittleButton type="pwa" popover-text="Install as app" @clicked="installPWA()"></PFLittleButton>
         <PFLittleButton type="settings" popover-text="Settings" @clicked="()=>{settings = true;}"></PFLittleButton>
-        <div class="voting-on" v-if="votingOnName">
-          <p class="voting-on-label">Voting on: <b>{{ votingOnName }}</b></p>
+        <div class="voting-on" v-if="votingOnName || isPRAMode">
+          <p class="voting-on-label" v-if="votingOnName">Voting on: <b>{{ votingOnName }}</b></p>
+          <p class="voting-on-label pra-phase" v-if="isPRAMode">
+            <b>{{ praPhaseLabel }}</b>
+          </p>
         </div>
       </div>
 
@@ -106,13 +114,173 @@
         </button>
       </div>
       <div class="results-container" v-if="showVotes && countdown === 0">
-        <div class="results">
+        <!-- Normal voting results (non-PRA) -->
+        <div class="results" v-if="!isPRAMode">
           <div class="average">Average: {{ averageValue }}</div>
           <div class="popular">Closest: {{ closestValue }}</div>
+        </div>
+
+        <!-- PRA Phase 1 Results -->
+        <div class="results pra-results" v-if="isPRAMode && praPhase === 1 && closestValue !== null">
+          <div class="pra-result-row">
+            <span class="pra-label">Vote Average:</span>
+            <span class="pra-value">{{ averageValue }}</span>
+          </div>
+          <div class="pra-result-row">
+            <span class="pra-label">Vote Closest:</span>
+            <span class="pra-value">{{ closestValue }}</span>
+          </div>
+          <div class="pra-result-row final-selection">
+            <span class="pra-label">Final Chance of Failure:</span>
+            <select v-model="selectedFinalScore" @change="updateFinalResult" class="final-score-select">
+              <option v-for="score in [1, 2, 3, 4, 5]" :key="score" :value="score">
+                {{ score }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- PRA Phase 2 Results -->
+        <div class="results pra-results" v-if="isPRAMode && praPhase === 2 && praRiskScore !== null">
+          <div class="pra-result-row">
+            <span class="pra-label">Vote Average:</span>
+            <span class="pra-value">{{ averageValue }}</span>
+          </div>
+          <div class="pra-result-row">
+            <span class="pra-label">Vote Closest:</span>
+            <span class="pra-value">{{ closestValue }}</span>
+          </div>
+          <div class="pra-result-row final-selection">
+            <span class="pra-label">Final Impact:</span>
+            <select v-model="selectedFinalScore" @change="updateFinalResult" class="final-score-select">
+              <option v-for="score in [1, 2, 3, 4, 5]" :key="score" :value="score">
+                {{ score }}
+              </option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="tickets" v-show="showTickets">
         <Tickets></Tickets>
+      </div>
+
+      <!-- PRA Progress Panel (Right Side) -->
+      <div class="pra-progress" v-if="isPRAMode">
+        <h3>PRA Progress</h3>
+        <div class="progress-section">
+          <div class="progress-phase" :class="{ active: praPhase === 1 && praChanceOfFailure === null, completed: praChanceOfFailure !== null && countdown === 0 }">
+            <div class="phase-header">
+              <span class="phase-number">1</span>
+              <span class="phase-title">Chance of Failure</span>
+            </div>
+            <div class="phase-result" v-if="praChanceOfFailure !== null && countdown === 0">
+              <span class="result-label">Result:</span>
+              <span class="result-value">{{ praChanceOfFailure }}</span>
+            </div>
+            <div class="phase-status" v-else-if="praPhase === 1 && praChanceOfFailure === null">
+              In Progress...
+            </div>
+          </div>
+
+          <div class="progress-arrow">↓</div>
+
+          <div class="progress-phase" :class="{ active: praPhase === 2 && praImpact === null, completed: praImpact !== null && countdown === 0 }">
+            <div class="phase-header">
+              <span class="phase-number">2</span>
+              <span class="phase-title">Impact</span>
+            </div>
+            <div class="phase-result" v-if="praImpact !== null && countdown === 0">
+              <span class="result-label">Result:</span>
+              <span class="result-value">{{ praImpact }}</span>
+            </div>
+            <div class="phase-status" v-else-if="praPhase === 2 && praImpact === null">
+              In Progress...
+            </div>
+            <div class="phase-status pending" v-else-if="praChanceOfFailure === null">
+              Pending...
+            </div>
+          </div>
+
+          <div class="progress-arrow" v-if="praRiskScore !== null && countdown === 0">↓</div>
+
+          <div class="final-risk" v-if="praRiskScore !== null && countdown === 0">
+            <div class="risk-score-display">
+              <span class="risk-label">Risk Score:</span>
+              <span class="risk-score">{{ praRiskScore }}</span>
+            </div>
+            <div class="risk-class-display" :class="'risk-' + praRiskClass?.toLowerCase()">
+              {{ praRiskClass }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRA Legend (Left Side) -->
+      <div class="pra-legend" v-if="isPRAMode">
+        <div class="legend-section">
+          <h3>Chance of Failure</h3>
+          <p class="legend-formula">Chance of error + Frequency / 2</p>
+          <div class="legend-item">
+            <span class="legend-number">1</span>
+            <span class="legend-text"><strong>Highly Unlikely:</strong> Probability is extremely low.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">2</span>
+            <span class="legend-text"><strong>Unlikely:</strong> Small probability this risk may occur.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">3</span>
+            <span class="legend-text"><strong>Possible:</strong> Moderate likelihood; may or may not happen.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">4</span>
+            <span class="legend-text"><strong>Likely:</strong> Significant probability this will occur.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">5</span>
+            <span class="legend-text"><strong>Almost Certain:</strong> Expected to occur with near certainty.</span>
+          </div>
+        </div>
+
+        <div class="legend-section">
+          <h3>Impact</h3>
+          <div class="legend-item">
+            <span class="legend-number">1</span>
+            <span class="legend-text"><strong>Negligible:</strong> Little to no impact.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">2</span>
+            <span class="legend-text"><strong>Low:</strong> Only efficiency or administrative processes affected.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">3</span>
+            <span class="legend-text"><strong>Moderate:</strong> Some inconvenience. Few parcels affected with workaround.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">4</span>
+            <span class="legend-text"><strong>Significant:</strong> Visible business impact. Parcels delayed or need workaround. One or few depot(s) affected.</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-number">5</span>
+            <span class="legend-text"><strong>Critical:</strong> Immediate operational halt. Depot(s) can't function. Several depots or nationwide impact.</span>
+          </div>
+        </div>
+
+        <div class="legend-section risk-ranges">
+          <h3>Risk Classification Ranges</h3>
+          <div class="risk-range-item risk-low">
+            <span class="range-label">LOW</span>
+            <span class="range-value">1-6</span>
+          </div>
+          <div class="risk-range-item risk-middle">
+            <span class="range-label">MIDDLE</span>
+            <span class="range-value">7-12</span>
+          </div>
+          <div class="risk-range-item risk-high">
+            <span class="range-label">HIGH</span>
+            <span class="range-value">13-25</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -148,7 +316,13 @@ const {
   currentVote,
   gameFormat,
   closestValue,
-  averageValue
+  averageValue,
+  praSession,
+  praPhase,
+  praChanceOfFailure,
+  praImpact,
+  praRiskScore,
+  praRiskClass
 } = useGameEngine();
 const showShareModal = ref(false);
 
@@ -191,10 +365,60 @@ onMounted(() => {
 });
 
 const startGameMessage = computed(() => {
+  if (gameFormat.value?.isPRA) {
+    if (praPhase.value === 1 && praChanceOfFailure.value !== null) {
+      return 'Vote on Impact!';
+    } else if (praPhase.value === 2 && praImpact.value !== null) {
+      if (!tickets.value || tickets.value.every(t => t.score)) {
+        return 'Start new PRA session!';
+      } else {
+        return 'Vote next issue!';
+      }
+    }
+  }
   if (!tickets.value || tickets.value.every(t => t.score)) {
     return 'Start new game!'
   } else {
     return 'Vote next issue!'
+  }
+});
+
+const praPhaseLabel = computed(() => {
+  if (!gameFormat.value?.isPRA) return '';
+  return praPhase.value === 1 ? 'Phase 1: Chance of Failure' : 'Phase 2: Impact';
+});
+
+const isPRAMode = computed(() => gameFormat.value?.isPRA === true);
+
+const selectedFinalScore = ref<number | null>(null);
+
+function updateFinalResult() {
+  if (selectedFinalScore.value !== null) {
+    socket.value.emit('praSetFinalResult', { finalScore: selectedFinalScore.value });
+  }
+}
+
+// Watch for PRA value changes to set default selection in dropdown
+import { watch } from 'vue';
+
+// For Phase 1: initialize from closestValue (Chance of Failure)
+watch(closestValue, (newValue) => {
+  if (isPRAMode.value && praPhase.value === 1 && newValue !== null) {
+    selectedFinalScore.value = newValue;
+  }
+});
+
+// For Phase 2: initialize from impact (closestValue in Phase 2)
+watch([praImpact, praPhase], ([newImpact, newPhase]) => {
+  if (isPRAMode.value && newPhase === 2 && newImpact !== null) {
+    selectedFinalScore.value = newImpact;
+  }
+});
+
+// Reset selection when PRA state is reset
+watch([praChanceOfFailure, praImpact], ([cof, impact]) => {
+  if (cof === null && impact === null) {
+    selectedFinalScore.value = null;
   }
 });
 
@@ -209,6 +433,10 @@ function performVote(vote: string) {
 
 function startNewGame() {
   socket.value.emit("restart");
+}
+
+function resetPRASession() {
+  socket.value.emit("resetPRASession");
 }
 
 function emitName(name: string) {
@@ -483,6 +711,395 @@ span {
       padding: 4px;
     }
   }
+
+  .pra-results {
+    width: 350px;
+    height: auto;
+    padding: 20px;
+    gap: 10px;
+
+    .pra-result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(84, 232, 221, 0.2);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.pra-classification {
+        margin-top: 10px;
+        padding-top: 15px;
+        border-top: 2px solid rgba(84, 232, 221, 0.4);
+        font-size: 22px;
+        font-weight: bold;
+      }
+
+      .pra-label {
+        color: #54e8dd;
+        opacity: 0.8;
+      }
+
+      .pra-value {
+        color: #54e8dd;
+        font-weight: bold;
+      }
+
+      &.risk-low .pra-value {
+        color: #4ade80;
+      }
+
+      &.risk-middle .pra-value {
+        color: #fbbf24;
+      }
+
+      &.risk-high .pra-value {
+        color: #f87171;
+      }
+    }
+  }
+}
+
+.pra-phase {
+  color: #54e8dd;
+  font-size: 18px;
+  margin-top: 5px;
+}
+
+.pra-legend {
+  position: fixed;
+  left: 20px;
+  top: 120px;
+  width: 300px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  background: #f3f0f1;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
+  6px 6px 10px rgba(0, 0, 0, 0.2);
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  z-index: 100;
+
+  h3 {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    color: #161b1f;
+    font-weight: bold;
+  }
+
+  .legend-section {
+    margin-bottom: 25px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .legend-formula {
+    font-size: 11px;
+    font-style: italic;
+    color: #666;
+    margin: -5px 0 10px 0;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 8px;
+
+    .legend-number {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      background: #54e8dd;
+      color: #161b1f;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .legend-text {
+      flex: 1;
+      line-height: 1.4;
+      color: #161b1f;
+      font-size: 12px;
+
+      strong {
+        color: #000;
+      }
+    }
+  }
+
+  .risk-ranges {
+    .risk-range-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: 14px;
+
+      &.risk-low {
+        background: #4ade80;
+        color: #fff;
+      }
+
+      &.risk-middle {
+        background: #fbbf24;
+        color: #000;
+      }
+
+      &.risk-high {
+        background: #f87171;
+        color: #fff;
+      }
+
+      .range-label {
+        font-weight: bold;
+      }
+
+      .range-value {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .pra-legend {
+    right: auto;
+    left: 20px;
+    width: 280px;
+    font-size: 11px;
+  }
+}
+
+@media only screen and (max-width: 900px) {
+  .pra-legend {
+    display: none;
+  }
+}
+
+.pra-progress {
+  position: fixed;
+  right: 20px;
+  top: 120px;
+  width: 280px;
+  background: #f3f0f1;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
+  6px 6px 10px rgba(0, 0, 0, 0.2);
+  font-family: "Montserrat", sans-serif;
+  z-index: 100;
+
+  h3 {
+    font-size: 18px;
+    margin: 0 0 20px 0;
+    color: #161b1f;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .progress-phase {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+
+    &.active {
+      border-color: #54e8dd;
+      background: rgba(84, 232, 221, 0.05);
+      box-shadow: 0 0 15px rgba(84, 232, 221, 0.2);
+    }
+
+    &.completed {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.05);
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+
+      .phase-number {
+        width: 30px;
+        height: 30px;
+        background: #e0e0e0;
+        color: #161b1f;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      .phase-title {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 600;
+        color: #161b1f;
+      }
+    }
+
+    &.active .phase-header .phase-number {
+      background: #54e8dd;
+      color: #161b1f;
+    }
+
+    &.completed .phase-header .phase-number {
+      background: #4ade80;
+      color: #fff;
+    }
+
+    .phase-result {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 8px;
+      font-size: 13px;
+
+      .result-label {
+        color: #666;
+      }
+
+      .result-value {
+        color: #161b1f;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .progress-arrow {
+    text-align: center;
+    color: #54e8dd;
+    font-size: 20px;
+    margin: -5px 0;
+  }
+
+  .final-risk-display {
+    margin-top: 20px;
+    padding: 20px;
+    background: #161b1f;
+    border-radius: 12px;
+    text-align: center;
+
+    .risk-label {
+      color: #54e8dd;
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .risk-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+
+      &.risk-low {
+        color: #4ade80;
+      }
+
+      &.risk-middle {
+        color: #fbbf24;
+      }
+
+      &.risk-high {
+        color: #f87171;
+      }
+    }
+
+    .risk-score {
+      color: #54e8dd;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  }
+}
+
+@media only screen and (max-width: 1400px) {
+  .pra-progress {
+    width: 240px;
+    padding: 15px;
+
+    h3 {
+      font-size: 16px;
+    }
+
+    .progress-phase .phase-header .phase-title {
+      font-size: 13px;
+    }
+  }
+}
+
+@media only screen and (max-width: 900px) {
+  .pra-progress {
+    display: none;
+  }
+}
+
+.final-score-select {
+  flex: 1;
+  padding: 8px 12px;
+  background: #161b1f;
+  color: #54e8dd;
+  border: 2px solid #54e8dd;
+  border-radius: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2a2f35;
+  }
+
+  &:focus {
+    border-color: #fff;
+  }
+
+  option {
+    background: #161b1f;
+    color: #54e8dd;
+    padding: 8px;
+  }
+}
+
+.final-selection {
+  margin-top: 15px;
+  padding-top: 15px !important;
+  border-top: 2px solid rgba(84, 232, 221, 0.4) !important;
+}
+
+.phase-label {
+  background: rgba(84, 232, 221, 0.1);
+  padding: 12px 0 !important;
+  margin-bottom: 10px;
+  border-radius: 8px;
 }
 
 .options {
