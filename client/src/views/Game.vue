@@ -46,8 +46,6 @@
               {{ ("copy_to_clip") }}
             </button>
             <div class="quick-links">
-              <PFLittleButton type="github" popover-text="Open repo" @clicked="goToGithub()"></PFLittleButton>
-              <PFLittleButton type="pwa" popover-text="Install as app" @clicked="installPWA()"></PFLittleButton>
               <PFLittleButton type="settings" popover-text="Settings" @clicked="()=>{settings = true;}"></PFLittleButton>
             </div>
           </div>
@@ -83,8 +81,7 @@
             </dl>
           </div>
           <div class="room-actions">
-            <button class="outline-button" @click="modal = true">Edit room name</button>
-            <button class="outline-button" @click="copyToClipboard()">Copy invite link</button>
+            <button class="outline-button" @click="modal = true">Edit name</button>
           </div>
         </section>
 
@@ -130,9 +127,8 @@
               </div>
             </div>
             <div class="round-body">
-              <div class="inline-actions">
-                <button class="ghost-button" @click="toggleTickets">Toggle tickets</button>
-                <button v-if="isPRAMode" class="ghost-button danger" @click="resetPRASession">Reset PRA session</button>
+              <div class="inline-actions" v-if="isPRAMode">
+                <button class="ghost-button danger" @click="resetPRASession">Reset PRA session</button>
               </div>
               <div class="cta-stack">
                 <button
@@ -160,6 +156,52 @@
                   Revealing in {{ countdown }}
                 </div>
               </div>
+
+              <!-- Results integrated into round details -->
+              <div v-if="showVotes && countdown === 0" class="round-results">
+                <div class="results-card" v-if="!isPRAMode">
+                  <div class="result-row">
+                    <span class="result-label">Average</span>
+                    <strong class="result-value">{{ averageValue }}</strong>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-label">Closest</span>
+                    <strong class="result-value">{{ closestValue }}</strong>
+                  </div>
+                </div>
+                <div class="results-card" v-if="isPRAMode && praPhase === 1 && closestValue !== null">
+                  <div class="result-row">
+                    <span class="result-label">Vote average</span>
+                    <strong class="result-value">{{ averageValue }}</strong>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-label">Vote closest</span>
+                    <strong class="result-value">{{ closestValue }}</strong>
+                  </div>
+                  <div class="result-row select-row">
+                    <span class="result-label">Final chance of failure</span>
+                    <select v-model="selectedFinalScore" @change="updateFinalResult">
+                      <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="results-card" v-if="isPRAMode && praPhase === 2 && closestValue !== null">
+                  <div class="result-row">
+                    <span class="result-label">Vote average</span>
+                    <strong class="result-value">{{ averageValue }}</strong>
+                  </div>
+                  <div class="result-row">
+                    <span class="result-label">Vote closest</span>
+                    <strong class="result-value">{{ closestValue }}</strong>
+                  </div>
+                  <div class="result-row select-row">
+                    <span class="result-label">Final impact</span>
+                    <select v-model="selectedFinalScore" @change="updateFinalResult">
+                      <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
           </article>
         </section>
@@ -183,61 +225,6 @@
               {{ vote }}
             </button>
           </div>
-          <p class="helper-text">
-            Keyboard: 1–9 to pick · Space to reveal · Esc to reset
-          </p>
-          <div class="tickets-panel" v-show="showTickets">
-            <Tickets></Tickets>
-          </div>
-        </section>
-
-        <section class="panel results-panel" v-if="showVotes && countdown === 0">
-          <div class="panel-header">
-            <div>
-              <h3>Results</h3>
-              <p>Share the outcome with your team.</p>
-            </div>
-          </div>
-          <div class="results-grid">
-            <div class="results-card" v-if="!isPRAMode">
-              <p class="results-label">Average</p>
-              <p class="results-value">{{ averageValue }}</p>
-              <p class="results-label">Closest</p>
-              <p class="results-value">{{ closestValue }}</p>
-            </div>
-            <div class="results-card" v-if="isPRAMode && praPhase === 1 && closestValue !== null">
-              <div class="pra-row">
-                <span>Vote average</span>
-                <strong>{{ averageValue }}</strong>
-              </div>
-              <div class="pra-row">
-                <span>Vote closest</span>
-                <strong>{{ closestValue }}</strong>
-              </div>
-              <div class="pra-row select-row">
-                <span>Final chance of failure</span>
-                <select v-model="selectedFinalScore" @change="updateFinalResult">
-                  <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
-                </select>
-              </div>
-            </div>
-            <div class="results-card" v-if="isPRAMode && praPhase === 2 && praRiskScore !== null">
-              <div class="pra-row">
-                <span>Vote average</span>
-                <strong>{{ averageValue }}</strong>
-              </div>
-              <div class="pra-row">
-                <span>Vote closest</span>
-                <strong>{{ closestValue }}</strong>
-              </div>
-              <div class="pra-row select-row">
-                <span>Final impact</span>
-                <select v-model="selectedFinalScore" @change="updateFinalResult">
-                  <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
-                </select>
-              </div>
-            </div>
-          </div>
         </section>
       </div>
 
@@ -250,34 +237,34 @@
             </div>
           </div>
           <div class="progress-section">
-            <div class="progress-phase" :class="{ active: praPhase === 1 && praChanceOfFailure === null, completed: praChanceOfFailure !== null && countdown === 0 }">
+            <div class="progress-phase" :class="{ active: praPhase === 1 && (praChanceOfFailure === null || !(showVotes && countdown === 0)), completed: praChanceOfFailure !== null && showVotes && countdown === 0 }">
               <div class="phase-header">
                 <span class="phase-number">1</span>
                 <span class="phase-title">Chance of failure</span>
               </div>
-              <div class="phase-status" v-if="praChanceOfFailure === null">In progress…</div>
+              <div class="phase-status" v-if="praChanceOfFailure === null || !(showVotes && countdown === 0)">In progress…</div>
               <div class="phase-result" v-else>
                 <span>Result</span>
                 <strong>{{ praChanceOfFailure }}</strong>
               </div>
             </div>
-            <div class="progress-phase" :class="{ active: praPhase === 2 && praImpact === null, completed: praImpact !== null && countdown === 0 }">
+            <div class="progress-phase" :class="{ active: praPhase === 2 && (praImpact === null || !(showVotes && countdown === 0)), completed: praImpact !== null && showVotes && countdown === 0 }">
               <div class="phase-header">
                 <span class="phase-number">2</span>
                 <span class="phase-title">Impact</span>
               </div>
-              <div class="phase-status" v-if="praPhase === 2 && praImpact === null">
+              <div class="phase-status" v-if="praPhase === 2 && (praImpact === null || !(showVotes && countdown === 0))">
                 In progress…
               </div>
-              <div class="phase-status" v-else-if="praChanceOfFailure === null">
+              <div class="phase-status" v-else-if="praChanceOfFailure === null || !(showVotes && countdown === 0)">
                 Pending phase 1
               </div>
-              <div class="phase-result" v-else-if="praImpact !== null">
+              <div class="phase-result" v-else-if="praImpact !== null && showVotes && countdown === 0">
                 <span>Result</span>
                 <strong>{{ praImpact }}</strong>
               </div>
             </div>
-            <div class="final-risk" v-if="praRiskScore !== null && countdown === 0">
+            <div class="final-risk" v-if="praRiskScore !== null && showVotes && countdown === 0">
               <div class="risk-score">
                 <span>Risk score</span>
                 <strong>{{ praRiskScore }}</strong>
@@ -290,32 +277,46 @@
         </section>
 
         <section class="panel legend-panel">
-          <div class="panel-header">
-            <div>
-              <h3>Legend</h3>
-              <p>Chance vs impact at a glance</p>
+          <!-- Chance of failure legend (Phase 1) -->
+          <div v-if="praPhase === 1">
+            <div class="panel-header">
+              <div>
+                <h3>Chance of failure</h3>
+                <p class="legend-formula">Chance of error + Frequency / 2</p>
+              </div>
             </div>
-          </div>
-          <div class="legend-section">
-            <h4>Chance of failure</h4>
-            <p class="legend-formula">Chance of error + Frequency / 2</p>
-            <div class="legend-list">
-              <div class="legend-item" v-for="(label, index) in chanceLegend" :key="`chance-${label}`">
-                <span class="legend-number">{{ index + 1 }}</span>
-                <span class="legend-text">{{ label }}</span>
+            <div class="legend-list-detailed">
+              <div class="legend-item-detailed" v-for="item in chanceOfFailureLegend" :key="item.score">
+                <div class="legend-item-header">
+                  <span class="legend-number">{{ item.score }}</span>
+                  <strong class="legend-title">{{ item.label }}</strong>
+                </div>
+                <p class="legend-description">{{ item.description }}</p>
               </div>
             </div>
           </div>
-          <div class="legend-section">
-            <h4>Impact</h4>
-            <div class="legend-list">
-              <div class="legend-item" v-for="(label, index) in impactLegend" :key="`impact-${label}`">
-                <span class="legend-number">{{ index + 1 }}</span>
-                <span class="legend-text">{{ label }}</span>
+
+          <!-- Impact legend (Phase 2) -->
+          <div v-if="praPhase === 2">
+            <div class="panel-header">
+              <div>
+                <h3>Impact</h3>
+                <p>Scale of business consequences</p>
+              </div>
+            </div>
+            <div class="legend-list-detailed">
+              <div class="legend-item-detailed" v-for="item in impactDetailedLegend" :key="item.score">
+                <div class="legend-item-header">
+                  <span class="legend-number">{{ item.score }}</span>
+                  <strong class="legend-title">{{ item.label }}</strong>
+                </div>
+                <p class="legend-description">{{ item.description }}</p>
               </div>
             </div>
           </div>
-          <div class="legend-section risk-ranges">
+
+          <!-- Risk classification (shown after both phases) -->
+          <div v-if="praRiskScore !== null && showVotes && countdown === 0" class="risk-classification">
             <h4>Risk classification</h4>
             <div
                 class="risk-range-item"
@@ -339,7 +340,6 @@ import Player from "@/view-models/player";
 import {io} from "socket.io-client";
 import {computed, onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
-import Tickets from "@/components/Tickets.vue";
 import {useTickets} from "@/composables/useTickets";
 import {useGameEngine} from "@/composables/useGameEngine";
 import PFLittleButton from "@/components/LittleButton.vue";
@@ -347,12 +347,10 @@ import Settings from "../components/SettingsModal.vue";
 import Sharing from "../components/SharingModal.vue";
 import GameFormat from "@/view-models/gameFormat";
 
-let showInstallPwa = ref(false);
 const modal = ref(true);
 const settings = ref(false)
 const showCopiedToClipboard = ref(false);
 const name = ref("");
-const showTickets = ref(false);
 const {votingOnName, tickets} = useTickets();
 const {
   socket,
@@ -374,8 +372,22 @@ const {
 const showShareModal = ref(false);
 const route = useRoute();
 
-const chanceLegend = ['Highly unlikely', 'Unlikely', 'Possible', 'Likely', 'Almost certain'];
-const impactLegend = ['Negligible', 'Low', 'Moderate', 'Significant', 'Critical'];
+const chanceOfFailureLegend = [
+  {score: 1, label: 'Highly Unlikely', description: 'The probability of this risk materializing is extremely low.'},
+  {score: 2, label: 'Unlikely', description: 'There is a small probability that this risk may occur.'},
+  {score: 3, label: 'Possible', description: 'The likelihood of this risk occurring is moderate; it may or may not happen.'},
+  {score: 4, label: 'Likely', description: 'There is a significant probability that this risk will occur.'},
+  {score: 5, label: 'Almost Certain', description: 'This risk is expected to occur with near certainty at some point.'}
+];
+
+const impactDetailedLegend = [
+  {score: 1, label: 'Negligible', description: 'This risk will have little to no impact.'},
+  {score: 2, label: 'Low', description: 'Only efficiency or administrative processes are affected.'},
+  {score: 3, label: 'Moderate', description: 'Some inconvenience. A small amount of parcels can still be delivered or planned with a workaround. Or a few drivers are impacted.'},
+  {score: 4, label: 'Significant', description: 'Visible business impact. Parcels can still be delivered or planned but with a delay or workaround (within our system). One or a few depot(s) are affected.'},
+  {score: 5, label: 'Critical', description: 'Immediate operational halt. Depot(s) can\'t function. Parcels can\'t be delivered or planned. Several depots or nationwide impact.'}
+];
+
 const riskLegend = [
   {label: 'Low', range: '1-6', variant: 'low'},
   {label: 'Medium', range: '7-12', variant: 'middle'},
@@ -387,17 +399,9 @@ const roomCode = computed(() => {
 });
 const roomTitle = computed(() => {
   if (name.value) {
-    return `${name.value}'s planning session`;
+    return `${name.value}'s session`;
   }
-  return 'Planfree planning session';
-});
-
-let deferredPrompt: any;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  showInstallPwa.value = true;
+  return 'Planning session';
 });
 
 function saveSettings(gameType: GameFormat) {
@@ -407,10 +411,6 @@ function saveSettings(gameType: GameFormat) {
 
 async function dismissModal() {
   showShareModal.value = false;
-}
-
-function installPWA() {
-  deferredPrompt.prompt();
 }
 
 onMounted(() => {
@@ -525,10 +525,6 @@ function copyToClipboard() {
   showShareModal.value = true;
 }
 
-function goToGithub() {
-  open("https://github.com/LukeGarrigan/planfree.dev");
-}
-
 function joiningAGame() {
   const currentState = socket.value;
   return (
@@ -537,9 +533,6 @@ function joiningAGame() {
       currentState.constructor === Object
   );
 }
-
-
-const toggleTickets = () => showTickets.value = !showTickets.value;
 
 const getInitial = (playerName: string) => {
   if (!playerName) return '?';
@@ -998,6 +991,68 @@ const getInitial = (playerName: string) => {
   font-weight: 500;
 }
 
+/* Round results integrated into round details */
+.round-results {
+  margin-top: 20px;
+}
+
+.round-results .results-card {
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  background: var(--gray-50, #F9FAFB);
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--gray-200, #EAECF0);
+  }
+
+  &.select-row {
+    margin-top: 8px;
+    padding-top: 12px;
+  }
+}
+
+.result-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600, #475467);
+}
+
+.result-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.result-row select {
+  padding: 6px 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--gray-300, #D0D5DD);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: var(--primary-300, #A4BCFD);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-600, #444CE7);
+    box-shadow: 0 0 0 4px var(--primary-50, #EEF4FF);
+  }
+}
+
 /* Vote cards */
 .vote-panel .vote-cards {
   display: flex;
@@ -1034,18 +1089,6 @@ const getInitial = (playerName: string) => {
     opacity: 0.5;
     cursor: not-allowed;
   }
-}
-
-.helper-text {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--gray-500, #667085);
-}
-
-.tickets-panel {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--gray-200, #EAECF0);
 }
 
 /* Results */
@@ -1271,7 +1314,56 @@ const getInitial = (playerName: string) => {
   color: var(--gray-600, #475467);
 }
 
-.risk-ranges .risk-range-item {
+/* Detailed legend for PRA phases */
+.legend-list-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legend-item-detailed {
+  padding: 12px;
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-md, 8px);
+  background: var(--gray-25, #FCFCFD);
+}
+
+.legend-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.legend-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.legend-description {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--gray-600, #475467);
+  margin: 0;
+  padding-left: 34px;
+}
+
+.risk-classification {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200, #EAECF0);
+
+  h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900, #101828);
+  }
+}
+
+.risk-ranges .risk-range-item,
+.risk-classification .risk-range-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
