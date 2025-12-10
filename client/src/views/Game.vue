@@ -397,12 +397,7 @@ const roomCode = computed(() => {
   const raw = route.params?.id;
   return raw ? raw.toString().toUpperCase() : '----';
 });
-const roomTitle = computed(() => {
-  if (name.value) {
-    return `${name.value}'s session`;
-  }
-  return 'Planning session';
-});
+const roomTitle = computed(() => 'Planning session');
 
 function saveSettings(gameType: GameFormat) {
   settings.value = false;
