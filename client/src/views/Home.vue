@@ -1,3 +1,34 @@
+<template>
+  <div class="home">
+    <div class="container">
+      <div class="logo">
+        <span class="logo-mark">Pf</span>
+      </div>
+      <div class="header">
+        <h1>Planfree</h1>
+        <p class="tagline">Free planning poker for agile teams</p>
+      </div>
+      <div class="actions">
+        <button
+            class="button primary"
+            :class="{ loading: clickedStart && !hasStarted }"
+            @click="startGame"
+            :disabled="clickedStart"
+        >
+          <span v-if="!clickedStart">Start new session</span>
+          <span v-else class="loading-text">
+            <svg class="spinner" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" />
+            </svg>
+            Connecting...
+          </span>
+        </button>
+      </div>
+      <p class="privacy" @click="goToPrivacy">Privacy Policy</p>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import router from "@/router";
 import { io } from "socket.io-client";
@@ -18,14 +49,14 @@ function startGame() {
   setTimeout(() => {
     if (!hasStarted.value) {
       alert("Unable to connect to the server. Please check your internet connection or try again later.");
-      clickedStart.value = false; // Reset button state
+      clickedStart.value = false;
     }
   }, 6000);
   registerSocket();
 }
 
 function goToPrivacy() {
-  router.push({ path: "/privacy" }); // Navigate to the privacy policy page
+  router.push({ path: "/privacy" });
 }
 
 function registerSocket() {
@@ -40,261 +71,121 @@ function registerSocket() {
   });
 }
 </script>
-<style scoped lang="scss">
-.home {
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-
-.container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 800px;
-}
-
-.start-game {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 80%;
-  position: relative;
-}
-
-.button {
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  width: 320px;
-  height: 80px;
-  background: #f3f0f1;
-  border-radius: 32px;
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  color: #161b1f;
-
-  &:hover {
-    opacity: 0.3;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    opacity: 1;
-    box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-    inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-  }
-
-  span {
-    font-family: "Montserrat", sans-serif;
-    font-size: 26px;
-    font-weight: semibold;
-  }
-}
-
-.disabled {
-  opacity: 1;
-  box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-  inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    opacity: 1;
-    box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-    inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-  }
-}
-
-svg rect {
-  fill: #54e8dd;
-}
-
-.free-poker-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 80%;
-  width: 100%;
-
-  h1 {
-    user-select: none;
-    font-size: 3.2em;
-
-    span {
-      color: #54e8dd;
-      background: black;
-      border-radius: 10px;
-      width: 7rem;
-      display: inline-block;
-    }
-  }
-}
-
-
-@media only screen and (max-width: 800px) {
-
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 800px;
-  }
-
-  .free-poker-header {
-    width: 90%;
-    align-items: flex-end;
-  }
-
-  .start-game {
-    align-items: flex-start;
-  }
-}
-
-.privacy {
-  text-decoration: underline;
-  position: absolute;
-}
-</style>
-
 
 <style scoped lang="scss">
 .home {
   display: flex;
+  align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--gray-50, #F9FAFB);
 }
-
 
 .container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 800px;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: var(--radius-xl, 16px);
+  border: 1px solid var(--gray-200, #EAECF0);
+  padding: 40px 32px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
 }
 
-.start-game {
-  display: flex;
+.logo {
+  margin-bottom: 24px;
+}
+
+.logo-mark {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 80%;
-  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--primary-600, #444CE7);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+  margin: 0 0 8px;
+}
+
+.tagline {
+  font-size: 15px;
+  color: var(--gray-600, #475467);
+  margin: 0;
+}
+
+.actions {
+  margin-bottom: 24px;
 }
 
 .button {
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  width: 320px;
-  height: 80px;
-  background: #f3f0f1;
-  border-radius: 32px;
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  color: #161b1f;
-
-  &:hover {
-    opacity: 0.3;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    opacity: 1;
-    box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-    inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-  }
-
-  span {
-    font-family: "Montserrat", sans-serif;
-    font-size: 26px;
-    font-weight: semibold;
-  }
-}
-
-.disabled {
-  opacity: 1;
-  box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-  inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    opacity: 1;
-    box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-    inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-  }
-}
-
-svg rect {
-  fill: #54e8dd;
-}
-
-.free-poker-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 80%;
   width: 100%;
-
-  h1 {
-    user-select: none;
-    font-size: 3.2em;
-
-    span {
-      color: #54e8dd;
-      background: black;
-      border-radius: 10px;
-      width: 7rem;
-      display: inline-block;
-    }
-  }
+  padding: 12px 20px;
+  border-radius: var(--radius-md, 8px);
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
+.button.primary {
+  background: var(--primary-600, #444CE7);
+  color: #fff;
+  box-shadow: var(--shadow-xs);
+}
 
-@media only screen and (max-width: 800px) {
+.button.primary:hover:not(:disabled) {
+  background: var(--primary-700, #3538CD);
+}
 
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 800px;
-  }
+.button.primary:disabled {
+  cursor: default;
+}
 
-  .free-poker-header {
-    width: 90%;
-    align-items: flex-end;
-  }
+.button.loading {
+  background: var(--primary-600, #444CE7);
+}
 
-  .start-game {
-    align-items: flex-start;
-  }
+.loading-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .privacy {
+  font-size: 13px;
+  color: var(--gray-500, #667085);
+  cursor: pointer;
+  margin: 0;
+}
+
+.privacy:hover {
+  color: var(--primary-600, #444CE7);
   text-decoration: underline;
-  position: absolute;
 }
 </style>

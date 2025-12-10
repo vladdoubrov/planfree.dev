@@ -1,91 +1,76 @@
 <template>
-  <div class="modal-container">
-    <div class="modal">
-      <div class="settings-container">
-        <div class="settings-heading">{{ "Invite the team" }}</div>
-        <div class="settings-content">
-          <button v-if="!showQRCode" class="button" @click="showQR()">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48px"
-                 height="48px" viewBox="0 0 48 48" version="1.1">
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 7.464844 5.332031 C 6.289062 5.332031 5.332031 6.289062 5.332031 7.464844 L 5.332031 16 L 16 16 L 16 5.332031 Z M 13.332031 13.332031 L 8 13.332031 L 8 8 L 13.332031 8 Z M 13.332031 13.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 5.332031 40.535156 C 5.332031 41.710938 6.289062 42.667969 7.464844 42.667969 L 16 42.667969 L 16 32 L 5.332031 32 Z M 8 34.667969 L 13.332031 34.667969 L 13.332031 40 L 8 40 Z M 8 34.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 32 42.667969 L 40.535156 42.667969 C 41.710938 42.667969 42.667969 41.710938 42.667969 40.535156 L 42.667969 32 L 32 32 Z M 34.667969 34.667969 L 40 34.667969 L 40 40 L 34.667969 40 Z M 34.667969 34.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 40.535156 5.332031 L 32 5.332031 L 32 16 L 42.667969 16 L 42.667969 7.464844 C 42.667969 6.289062 41.710938 5.332031 40.535156 5.332031 Z M 40 13.332031 L 34.667969 13.332031 L 34.667969 8 L 40 8 Z M 40 13.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 26.667969 13.332031 L 26.667969 10.667969 L 21.332031 10.667969 L 21.332031 16 L 24 16 L 24 13.332031 Z M 26.667969 13.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 16 16 L 18.667969 16 L 18.667969 18.667969 L 16 18.667969 Z M 16 16 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 18.667969 18.667969 L 24 18.667969 L 24 21.332031 L 18.667969 21.332031 Z M 18.667969 18.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 26.667969 8 L 26.667969 10.667969 L 29.332031 10.667969 L 29.332031 5.332031 L 18.667969 5.332031 L 18.667969 10.667969 L 21.332031 10.667969 L 21.332031 8 Z M 26.667969 8 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 5.332031 18.667969 L 8 18.667969 L 8 24 L 5.332031 24 Z M 5.332031 18.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 16 21.332031 L 16 24 L 13.332031 24 L 13.332031 18.667969 L 10.667969 18.667969 L 10.667969 24 L 8 24 L 8 26.667969 L 5.332031 26.667969 L 5.332031 29.332031 L 10.667969 29.332031 L 10.667969 26.667969 L 13.332031 26.667969 L 13.332031 29.332031 L 16 29.332031 L 16 26.667969 L 18.667969 26.667969 L 18.667969 21.332031 Z M 16 21.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 26.667969 21.332031 L 29.332031 21.332031 L 29.332031 24 L 32 24 L 32 21.332031 L 34.667969 21.332031 L 34.667969 18.667969 L 29.332031 18.667969 L 29.332031 13.332031 L 26.667969 13.332031 L 26.667969 16 L 24 16 L 24 18.667969 L 26.667969 18.667969 Z M 26.667969 21.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 24 40 L 18.667969 40 L 18.667969 42.667969 L 29.332031 42.667969 L 29.332031 40 L 26.667969 40 L 26.667969 37.332031 L 24 37.332031 Z M 24 40 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 29.332031 26.667969 L 29.332031 24 L 26.667969 24 L 26.667969 21.332031 L 24 21.332031 L 24 24 L 21.332031 24 L 21.332031 26.667969 L 24 26.667969 L 24 29.332031 L 26.667969 29.332031 L 26.667969 26.667969 Z M 29.332031 26.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 40 26.667969 L 42.667969 26.667969 L 42.667969 29.332031 L 40 29.332031 Z M 40 26.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 29.332031 26.667969 L 37.332031 26.667969 L 37.332031 29.332031 L 29.332031 29.332031 Z M 29.332031 26.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 40 18.667969 L 37.332031 18.667969 L 37.332031 21.332031 L 34.667969 21.332031 L 34.667969 24 L 37.332031 24 L 37.332031 26.667969 L 40 26.667969 L 40 24 L 42.667969 24 L 42.667969 21.332031 L 40 21.332031 Z M 40 18.667969 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 26.667969 29.332031 L 29.332031 29.332031 L 29.332031 37.332031 L 26.667969 37.332031 Z M 26.667969 29.332031 "/>
-              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;"
-                    d="M 18.667969 37.332031 L 21.332031 37.332031 L 21.332031 34.667969 L 24 34.667969 L 24 32 L 21.332031 32 L 21.332031 26.667969 L 18.667969 26.667969 Z M 18.667969 37.332031 "/>
-            </svg>
-            <span>QR Code</span>
+  <div class="modal-backdrop" @click.self="close">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+      <div class="modal-header">
+        <div>
+          <h2 id="share-title">Invite teammates</h2>
+          <p class="modal-subtitle">Share the link or scan the QR code</p>
+        </div>
+        <button class="close-btn" @click="close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div v-if="!showQRCode" class="share-options">
+          <button class="share-option" @click="copyLink">
+            <div class="option-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M4.16667 12.5C3.39167 12.5 2.64833 12.1917 2.10167 11.645C1.555 11.0983 1.24667 10.355 1.24667 9.58C1.24667 8.805 1.555 8.06167 2.10167 7.515C2.64833 6.96833 3.39167 6.66 4.16667 6.66H7.5V8.33H4.16667C3.83167 8.33 3.51 8.46333 3.27333 8.7C3.03667 8.93667 2.90333 9.25833 2.90333 9.59333C2.90333 9.92833 3.03667 10.25 3.27333 10.4867C3.51 10.7233 3.83167 10.8567 4.16667 10.8567H7.5V12.5267H4.16667V12.5ZM5.83333 10.4167V8.75H14.1667V10.4167H5.83333ZM12.5 12.5V10.8333H15.8333C16.1683 10.8333 16.49 10.7 16.7267 10.4633C16.9633 10.2267 17.0967 9.905 17.0967 9.57C17.0967 9.235 16.9633 8.91333 16.7267 8.67667C16.49 8.44 16.1683 8.30667 15.8333 8.30667H12.5V6.66667H15.8333C16.6083 6.66667 17.3517 6.975 17.8983 7.52167C18.445 8.06833 18.7533 8.81167 18.7533 9.58667C18.7533 10.3617 18.445 11.105 17.8983 11.6517C17.3517 12.1983 16.6083 12.5067 15.8333 12.5067H12.5V12.5Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="option-text">
+              <span class="option-title">Copy link</span>
+              <span class="option-desc">Share via your favorite app</span>
+            </div>
           </button>
 
-          <button v-if="!showQRCode" class="button" @click="() => share()">
-            <svg width="48px" height="48px" viewBox="0 0 24 24" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-              <path
-                  d="M9 12C9 13.3807 7.88071 14.5 6.5 14.5C5.11929 14.5 4 13.3807 4 12C4 10.6193 5.11929 9.5 6.5 9.5C7.88071 9.5 9 10.6193 9 12Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-              <path d="M14 6.5L9 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M14 17.5L9 14" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-              <path
-                  d="M19 18.5C19 19.8807 17.8807 21 16.5 21C15.1193 21 14 19.8807 14 18.5C14 17.1193 15.1193 16 16.5 16C17.8807 16 19 17.1193 19 18.5Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-              <path
-                  d="M19 5.5C19 6.88071 17.8807 8 16.5 8C15.1193 8 14 6.88071 14 5.5C14 4.11929 15.1193 3 16.5 3C17.8807 3 19 4.11929 19 5.5Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-            </svg>
-
-            <span>Share</span>
-          </button>
-          <button v-if="!showQRCode" :class="{ 'button': true}"
-                  @click="copyLink()">
-            <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 0 24 24" width="48">
-              <path d="M0 0h24v24H0V0z" fill="none"/>
-              <path
-                  d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-            </svg>
-            <span>Copy to Clipboard</span>
+          <button class="share-option" @click="showQR">
+            <div class="option-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M2.5 7.5V3.33333C2.5 2.89131 2.67559 2.46738 2.98816 2.15482C3.30072 1.84226 3.72464 1.66667 4.16667 1.66667H7.5V3.33333H4.16667V7.5H2.5Z" fill="currentColor"/>
+                <path d="M2.5 16.6667V12.5H4.16667V16.6667H7.5V18.3333H4.16667C3.72464 18.3333 3.30072 18.1577 2.98816 17.8452C2.67559 17.5326 2.5 17.1087 2.5 16.6667Z" fill="currentColor"/>
+                <path d="M15.8333 18.3333H12.5V16.6667H15.8333V12.5H17.5V16.6667C17.5 17.1087 17.3244 17.5326 17.0118 17.8452C16.6993 18.1577 16.2754 18.3333 15.8333 18.3333Z" fill="currentColor"/>
+                <path d="M17.5 7.5H15.8333V3.33333H12.5V1.66667H15.8333C16.2754 1.66667 16.6993 1.84226 17.0118 2.15482C17.3244 2.46738 17.5 2.89131 17.5 3.33333V7.5Z" fill="currentColor"/>
+                <path d="M5.83333 5.83333H9.16667V9.16667H5.83333V5.83333Z" fill="currentColor"/>
+                <path d="M10.8333 5.83333H14.1667V9.16667H10.8333V5.83333Z" fill="currentColor"/>
+                <path d="M5.83333 10.8333H9.16667V14.1667H5.83333V10.8333Z" fill="currentColor"/>
+                <path d="M10.8333 10.8333H14.1667V14.1667H10.8333V10.8333Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="option-text">
+              <span class="option-title">Show QR code</span>
+              <span class="option-desc">Scan from another device</span>
+            </div>
           </button>
 
-          <div v-if="showQRCode">
-            <qrcode-vue :value="value" :level="level" :render-as="renderAs"/>
+          <button v-if="canShare" class="share-option" @click="nativeShare">
+            <div class="option-icon">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M15 6.66667C16.3807 6.66667 17.5 5.54738 17.5 4.16667C17.5 2.78595 16.3807 1.66667 15 1.66667C13.6193 1.66667 12.5 2.78595 12.5 4.16667C12.5 5.54738 13.6193 6.66667 15 6.66667Z" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 12.5C6.38071 12.5 7.5 11.3807 7.5 10C7.5 8.61929 6.38071 7.5 5 7.5C3.61929 7.5 2.5 8.61929 2.5 10C2.5 11.3807 3.61929 12.5 5 12.5Z" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15 18.3333C16.3807 18.3333 17.5 17.214 17.5 15.8333C17.5 14.4526 16.3807 13.3333 15 13.3333C13.6193 13.3333 12.5 14.4526 12.5 15.8333C12.5 17.214 13.6193 18.3333 15 18.3333Z" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7.15833 11.2583L12.85 14.575" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12.8417 5.425L7.15833 8.74167" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="option-text">
+              <span class="option-title">Share</span>
+              <span class="option-desc">Use system share menu</span>
+            </div>
+          </button>
+        </div>
+
+        <div v-else class="qr-view">
+          <div class="qr-container">
+            <qrcode-vue :value="qrValue" :level="level" :render-as="renderAs" :size="180"/>
           </div>
-
-          <button :class="{ 'button': true }" @click="close()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none">
-              <path
-                  d="M20.7457 3.32851C20.3552 2.93798 19.722 2.93798 19.3315 3.32851L12.0371 10.6229L4.74275 3.32851C4.35223 2.93798 3.71906 2.93798 3.32854 3.32851C2.93801 3.71903 2.93801 4.3522 3.32854 4.74272L10.6229 12.0371L3.32856 19.3314C2.93803 19.722 2.93803 20.3551 3.32856 20.7457C3.71908 21.1362 4.35225 21.1362 4.74277 20.7457L12.0371 13.4513L19.3315 20.7457C19.722 21.1362 20.3552 21.1362 20.7457 20.7457C21.1362 20.3551 21.1362 19.722 20.7457 19.3315L13.4513 12.0371L20.7457 4.74272C21.1362 4.3522 21.1362 3.71903 20.7457 3.32851Z"
-                  fill="#0F0F0F"/>
+          <button class="back-btn" @click="showQRCode = false">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M15.8333 10H4.16667M4.16667 10L10 15.8333M4.16667 10L10 4.16667" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>Close</span>
+            Back to options
           </button>
         </div>
       </div>
@@ -94,18 +79,20 @@
 </template>
 
 <script setup lang="ts">
-import {ref, defineEmits} from 'vue';
-import QrcodeVue, {Level, RenderAs} from 'qrcode.vue';
+import { ref, computed } from 'vue';
+import QrcodeVue, { Level, RenderAs } from 'qrcode.vue';
 
-const value = ref('')
+const qrValue = ref('')
 const showQRCode = ref(false);
 const level = ref<Level>("H")
 const renderAs = ref<RenderAs>('svg')
 
 const emit = defineEmits(['dismissModal'])
 
-async function showQR() {
-  value.value = window.location.href
+const canShare = computed(() => typeof navigator.share === 'function');
+
+function showQR() {
+  qrValue.value = window.location.href
   showQRCode.value = true;
 }
 
@@ -114,17 +101,15 @@ function close() {
   emit('dismissModal')
 }
 
-
 async function copyLink() {
-  value.value = undefined;
   await navigator.clipboard.writeText(window.location.href);
   close();
 }
 
-async function share() {
+async function nativeShare() {
   try {
     await navigator.share({
-      text: "Check out this URL!",
+      title: "Join my planning session",
       url: window.location.href,
     });
   } catch (err) {
@@ -135,103 +120,179 @@ async function share() {
 </script>
 
 <style scoped lang="scss">
-
-.modal-container {
-  width: 100%;
-  height: 100vh;
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: rgba(16, 24, 40, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+  z-index: 1100;
 }
 
 .modal {
-  height: fit-content;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  color: #161b1f;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 0;
+  gap: 16px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+  margin: 0;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: var(--gray-600, #475467);
+  margin: 4px 0 0;
+}
+
+.close-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  width: 30%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  color: var(--gray-500, #667085);
+  cursor: pointer;
+  transition: all 0.15s ease;
 
-  .settings-heading {
-    font-size: 26px;
-    opacity: 0.5;
-    margin-bottom: 20px;
+  svg {
+    width: 20px;
+    height: 20px;
   }
 
-  .settings-subheading {
-    font-size: 20px;
-    opacity: 0.5;
-    margin-bottom: 5px;
-  }
-
-  .settings-content {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    flex-direction: column;
-    gap: 1em;
-  }
-
-  .settings-footer {
-    padding-top: 20px;
-    justify-content: center;
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-  }
-
-  .button {
-    user-select: none;
-    display: flex;
-    align-items: center;
-    padding-left: 20px;
-    width: 320px;
-    height: 80px;
-    background: #f3f0f1;
-    border-radius: 32px;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-    transition: all 0.1s ease-in-out;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-    color: #161b1f;
-
-    &:hover {
-      opacity: 0.3;
-      box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-      6px 6px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    &:active {
-      opacity: 1;
-      box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-      inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    span {
-      padding-left: 20px;
-      font-family: "Montserrat", sans-serif;
-      font-size: 26px;
-      font-weight: semibold;
-    }
+  &:hover {
+    background: var(--gray-100, #F2F4F7);
+    color: var(--gray-700, #344054);
   }
 }
 
-span {
-  line-height: 80px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 26px;
-  font-weight: semibold;
+.modal-body {
+  padding: 20px 24px 24px;
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: var(--gray-300, #D0D5DD);
+    background: var(--gray-50, #F9FAFB);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0px 0px 0px 4px var(--gray-100, #F2F4F7);
+  }
+}
+
+.option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--gray-100, #F2F4F7);
+  color: var(--gray-600, #475467);
+  flex-shrink: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
+}
+
+.option-desc {
+  font-size: 13px;
+  color: var(--gray-500, #667085);
+}
+
+.qr-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.qr-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--gray-50, #F9FAFB);
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  color: var(--gray-700, #344054);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: var(--gray-50, #F9FAFB);
+  }
 }
 </style>

@@ -32,7 +32,7 @@ let gameTypes = [
     { name: 'T-Shirt', values: ['XXS', 'XS', 'S', 'M', 'L', 'XL', '?'] },
     { name: 'Powers of 2', values: [0, 1, 2, 4, 8, 16, 32, 64, '?'] },
     { name: 'Linear (1-5)', values: [1, 2, 3, 4, 5, '?'] },
-    { name: 'PRA (Product Risk Analysis)', values: [1, 2, 3, 4, 5], isPRA: true },
+    { name: 'PRA', values: [1, 2, 3, 4, 5], isPRA: true },
 ]
 
 io.on('connection', (socket) => {

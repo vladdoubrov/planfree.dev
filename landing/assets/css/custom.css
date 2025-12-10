@@ -1,1 +1,128 @@
-/* Add your own custom styles here */
+@layer components {
+  .header {
+    @apply bg-white/90 dark:bg-darkmode-body/90 backdrop-blur-xl border-b border-border dark:border-darkmode-border py-4 shadow-[0_14px_60px_rgba(16,24,40,0.1)];
+    border-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+  }
+
+  .dark .header {
+    border-color: color-mix(in srgb, var(--color-darkmode-border) 60%, transparent);
+  }
+
+  .navbar .nav-link {
+    @apply text-text font-semibold hover:text-primary dark:text-darkmode-text-dark dark:hover:text-darkmode-primary;
+  }
+
+  .btn {
+    @apply rounded-xl px-5 py-2.5 font-semibold transition duration-200;
+    box-shadow: 0 14px 36px -16px rgba(127, 86, 217, 0.5);
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-[#5B8DEF] text-white border-0 shadow-none;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px -12px rgba(91, 141, 239, 0.6);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center rounded-xl border border-border bg-white/80 px-5 py-2.5 text-text-dark shadow-sm transition hover:-translate-y-0.5 hover:text-primary dark:bg-darkmode-light/70 dark:text-darkmode-text-dark dark:border-darkmode-border;
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(127, 86, 217, 0.7);
+  }
+
+  .hero-badge {
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-primary;
+    border: 1px solid rgba(127, 86, 217, 0.2);
+    background: rgba(127, 86, 217, 0.1);
+  }
+
+  .hero-card {
+    @apply relative overflow-hidden rounded-3xl border bg-white/80 p-4 shadow-[0_26px_80px_rgba(16,24,40,0.18)] backdrop-blur-lg dark:border-darkmode-border dark:bg-darkmode-light/80;
+    border-color: color-mix(in srgb, var(--color-border) 80%, transparent);
+  }
+
+  .dark .hero-card {
+    border-color: color-mix(in srgb, var(--color-darkmode-border) 70%, transparent);
+  }
+
+  .hero-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(127, 86, 217, 0.18), transparent 40%),
+      radial-gradient(circle at 80% 0%, rgba(91, 141, 239, 0.2), transparent 35%);
+    pointer-events: none;
+  }
+
+  .hero-card__chrome {
+    @apply mb-3 flex items-center gap-1;
+  }
+
+  .hero-card__dot {
+    @apply h-2.5 w-2.5 rounded-full;
+    background: rgba(127, 86, 217, 0.4);
+  }
+
+  .hero-stat {
+    @apply flex-1 min-w-[160px] rounded-2xl border bg-white/90 px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-darkmode-border dark:bg-darkmode-light/80;
+    border-color: var(--color-border);
+  }
+
+  .feature-card {
+    @apply h-full rounded-2xl border bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-darkmode-border dark:bg-darkmode-light/80;
+    border-color: var(--color-border);
+  }
+
+  .feature-card:hover {
+    border-color: rgba(127, 86, 217, 0.5);
+  }
+
+  .feature-icon {
+    @apply mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl text-primary;
+    background: rgba(127, 86, 217, 0.1);
+    box-shadow: 0 16px 38px -20px rgba(127, 86, 217, 0.45);
+  }
+
+  .section-heading {
+    @apply mx-auto max-w-3xl text-center;
+  }
+
+  .section-eyebrow {
+    @apply mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-primary;
+    border: 1px solid rgba(127, 86, 217, 0.1);
+    background: rgba(127, 86, 217, 0.05);
+  }
+
+  .timeline-card {
+    @apply rounded-2xl border bg-white/90 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-darkmode-border dark:bg-darkmode-light/80;
+    border-color: var(--color-border);
+  }
+
+  .timeline-dot {
+    @apply h-3 w-3 rounded-full shadow-[0_10px_30px_rgba(127,86,217,0.5)];
+    background: var(--color-primary);
+  }
+
+  .testimonial-card {
+    @apply h-full rounded-2xl border bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-darkmode-border dark:bg-darkmode-light/80;
+    border-color: var(--color-border);
+  }
+
+  .cta-panel {
+    @apply relative overflow-hidden rounded-3xl border p-10 shadow-[0_26px_80px_rgba(16,24,40,0.12)] dark:from-darkmode-light/60 dark:via-darkmode-light/60 dark:to-darkmode-light/60;
+    border-color: rgba(127, 86, 217, 0.2);
+    background-image: linear-gradient(120deg, rgba(127, 86, 217, 0.1), rgba(91, 141, 239, 0.1), #ffffff);
+  }
+}
+
+@layer utilities {
+  .blur-blob {
+    filter: blur(90px);
+    opacity: 0.4;
+  }
+}

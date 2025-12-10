@@ -1,6 +1,5 @@
 <template>
-
-  <div class="input-container">
+  <div class="input-group">
     <input
         type="text"
         id="selectNameInput"
@@ -12,25 +11,16 @@
         :placeholder="placeholder"
         @keypress.enter="completed"
     />
-
-    <button class="enter-button" type="submit" aria-label="Use name" @click="completed">
-      <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 0 24 24"
-          width="24px"
-          fill="#000000"
-      >
-        <path d="M0 0h24v24H0z" fill="none"/>
-        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+    <button class="submit-btn" type="submit" aria-label="Submit" @click="completed">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 4.5L13 10L7.5 15.5" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-
-import {ref} from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -64,37 +54,70 @@ const completed = () => {
 </script>
 
 <style scoped lang="scss">
-.input-container {
+.input-group {
   display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
 
-.enter-button {
-  //background: #54e8dd;
-  background: white;
-  border: none;
+.input {
+  flex: 1;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--gray-900, #101828);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--gray-400, #98A2B3);
+  }
+
+  &:hover {
+    border-color: var(--gray-400, #98A2B3);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-300, #A4BCFD);
+    box-shadow: 0px 0px 0px 4px var(--primary-100, #E0EAFF), 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  }
+}
+
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--primary-600, #444CE7);
+  border-radius: var(--radius-md, 8px);
+  background: var(--primary-600, #444CE7);
+  color: #fff;
   cursor: pointer;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  width: 50px;
-  height: 45px;
-}
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 
-input {
-  box-sizing: border-box;
-  width: 295px;
-  height: 45px;
-  border: none;
-  outline: none;
-  font-size: 20px;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-  color: #161b1f;
-  padding: 8px 50px 8px 8px;
-}
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 
-input::placeholder {
-  color: #a0a0a0; /* Lighter/dimmer color for the placeholder */
-  font-size: 20px; /* Smaller font size for the placeholder */
-  padding-left: 10px;
+  &:hover {
+    background: var(--primary-700, #3538CD);
+    border-color: var(--primary-700, #3538CD);
+  }
+
+  &:focus-visible {
+    box-shadow: 0px 0px 0px 4px var(--primary-100, #E0EAFF), 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  }
+
+  &:active {
+    background: var(--primary-800, #2D31A6);
+    border-color: var(--primary-800, #2D31A6);
+  }
 }
 </style>

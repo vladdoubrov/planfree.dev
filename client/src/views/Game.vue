@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="screen-reader-only">Planfree.dev game lobby</h1>
+    <h1 class="sr-only">Planfree.dev game lobby</h1>
     <Modal
         v-if="modal"
         title="Choose your display name"
@@ -14,274 +14,321 @@
     ></Settings>
     <Sharing v-if="showShareModal" title='share_modal_title' subTitle='share_modal_subtitle'
              @dismissModal="dismissModal"></Sharing>
-    <div v-if="!modal && !settings && !showShareModal" class="home">
-
-      <div class="top-buttons">
-        <button class="edit-name-button" @click="modal = true">
-          <div>{{ name }}</div>
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-              <path d="M0 0h24v24H0V0z" fill="none"/>
-              <path
-                  d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/>
-            </svg>
+    <div v-if="!modal && !settings && !showShareModal" class="lobby-page">
+      <div class="lobby-shell">
+        <header class="lobby-header">
+          <div class="brand">
+            <span class="brand-mark">Pf</span>
+            <div class="brand-copy">
+              <p class="brand-title">Planfree</p>
+              <p class="brand-subtitle">Planning poker for modern teams</p>
+            </div>
           </div>
-        </button>
-        <button v-if="!showCopiedToClipboard" class="button invite" @click="copyToClipboard()">
-          <div>{{ "Invite players" }}</div>
-          <div>
-            <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-              <path
-                  d="M9 12C9 13.3807 7.88071 14.5 6.5 14.5C5.11929 14.5 4 13.3807 4 12C4 10.6193 5.11929 9.5 6.5 9.5C7.88071 9.5 9 10.6193 9 12Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-              <path d="M14 6.5L9 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M14 17.5L9 14" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-              <path
-                  d="M19 18.5C19 19.8807 17.8807 21 16.5 21C15.1193 21 14 19.8807 14 18.5C14 17.1193 15.1193 16 16.5 16C17.8807 16 19 17.1193 19 18.5Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-              <path
-                  d="M19 5.5C19 6.88071 17.8807 8 16.5 8C15.1193 8 14 6.88071 14 5.5C14 4.11929 15.1193 3 16.5 3C17.8807 3 19 4.11929 19 5.5Z"
-                  stroke="#1C274C" stroke-width="1.5"/>
-            </svg>
+          <div class="header-actions">
+            <div class="live-pill">
+              <span class="dot"></span>
+              Live lobby
+            </div>
+            <button
+                v-if="!showCopiedToClipboard"
+                class="primary-button"
+                @click="copyToClipboard()"
+            >
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 4v12m6-6H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+              Invite players
+            </button>
+            <button
+                v-else
+                class="secondary-button no-pointer"
+            >
+              {{ ("copy_to_clip") }}
+            </button>
+            <div class="quick-links">
+              <PFLittleButton type="github" popover-text="Open repo" @clicked="goToGithub()"></PFLittleButton>
+              <PFLittleButton type="pwa" popover-text="Install as app" @clicked="installPWA()"></PFLittleButton>
+              <PFLittleButton type="settings" popover-text="Settings" @clicked="()=>{settings = true;}"></PFLittleButton>
+            </div>
           </div>
-        </button>
-        <button v-if="!modal && showCopiedToClipboard" class="button invite copied no-hover">
-          <div>{{ ("copy_to_clip") }}</div>
-          <div></div>
-        </button>
-        <button class="fib-button" @click="toggleTickets">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-            <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h440l200 200v440q0 33-23.5 56.5T760-120H200Zm0-80h560v-400H600v-160H200v560Zm80-80h400v-80H280v80Zm0-320h200v-80H280v80Zm0 160h400v-80H280v80Zm-80-320v160-160 560-560Z"/>
-          </svg>
-        </button>
-        <button v-if="isPRAMode" class="fib-button reset-button" @click="resetPRASession" title="Reset PRA Session">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-            <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/>
-          </svg>
-        </button>
-      </div>
+        </header>
 
-      <div class="top-left">
-        <PFLittleButton type="github" popover-text="Open repo" @clicked="goToGithub()"></PFLittleButton>
-        <PFLittleButton type="pwa" popover-text="Install as app" @clicked="installPWA()"></PFLittleButton>
-        <PFLittleButton type="settings" popover-text="Settings" @clicked="()=>{settings = true;}"></PFLittleButton>
-        <div class="voting-on" v-if="votingOnName || isPRAMode">
-          <p class="voting-on-label" v-if="votingOnName">Voting on: <b>{{ votingOnName }}</b></p>
-          <p class="voting-on-label pra-phase" v-if="isPRAMode">
-            <b>{{ praPhaseLabel }}</b>
+        <section class="room-card">
+          <div class="room-text">
+            <p class="eyebrow">Current room</p>
+            <div class="room-heading">
+              <h2>{{ roomTitle }}</h2>
+              <span class="room-chip">
+                <span class="dot"></span>
+                {{ gameFormat?.name || 'Fibonacci deck' }}
+              </span>
+            </div>
+            <p class="room-description">
+              Share the invite link, let teammates pick a card, and reveal together. Everything stays in sync.
+            </p>
+            <dl class="room-stats">
+              <div>
+                <dt>Room code</dt>
+                <dd>{{ roomCode }}</dd>
+              </div>
+              <div>
+                <dt>Players</dt>
+                <dd>{{ players?.length || 0 }}</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd v-if="votingOnName">Voting on {{ votingOnName }}</dd>
+                <dd v-else>Waiting for next story</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="room-actions">
+            <button class="outline-button" @click="modal = true">Edit room name</button>
+            <button class="outline-button" @click="copyToClipboard()">Copy invite link</button>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Players</h3>
+                <p>See who is ready to vote.</p>
+              </div>
+            </div>
+            <div class="player-list" v-if="players && players.length">
+              <div
+                  class="player-row"
+                  v-for="(player, index) in players"
+                  :key="player.id"
+                  :style="{ animationDelay: `${index * 60}ms` }"
+              >
+                <div class="avatar" :class="{ reveal: showVotes && countdown === 0 }">
+                  <span v-if="showVotes && countdown === 0">{{ player.vote }}</span>
+                  <span v-else>{{ getInitial(player.name) }}</span>
+                </div>
+                <div class="player-copy">
+                  <p>{{ player.name }}</p>
+                  <small v-if="player.vote">Ready</small>
+                  <small v-else>Waiting…</small>
+                </div>
+                <span class="status-chip" :class="{ ready: player.vote }">
+                  {{ player.vote ? 'Ready' : 'Waiting' }}
+                </span>
+              </div>
+            </div>
+            <div class="empty-state" v-else>
+              Waiting for players to join. Share the invite link to bring your team in.
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Round details</h3>
+                <p>Pick a story and align your estimates.</p>
+              </div>
+            </div>
+            <div class="round-body">
+              <div class="inline-actions">
+                <button class="ghost-button" @click="toggleTickets">Toggle tickets</button>
+                <button v-if="isPRAMode" class="ghost-button danger" @click="resetPRASession">Reset PRA session</button>
+              </div>
+              <div class="cta-stack">
+                <button
+                    v-if="!playerHasVoted() && !showVotes"
+                    class="primary-button"
+                    disabled
+                >
+                  Cast your votes
+                </button>
+                <button
+                    v-if="playerHasVoted() && !showVotes"
+                    class="primary-button"
+                    @click="showVotesClicked()"
+                >
+                  Show votes
+                </button>
+                <button
+                    v-if="showVotes && countdown === 0"
+                    class="primary-button"
+                    @click="startNewGame()"
+                >
+                  {{ startGameMessage }}
+                </button>
+                <div v-if="showVotes && countdown > 0" class="countdown-pill">
+                  Revealing in {{ countdown }}
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel vote-panel" v-if="gameFormat?.values">
+          <div class="panel-header">
+            <div>
+              <h3>Your vote</h3>
+              <p>Choose a card. You can update it until reveal.</p>
+            </div>
+          </div>
+          <div class="vote-cards">
+            <button
+                v-for="vote in gameFormat?.values"
+                :key="`vote-${vote}`"
+                class="vote-chip"
+                :class="{ selected: currentVote === vote }"
+                @click="performVote(vote)"
+                :disabled="showVotes && countdown === 0"
+            >
+              {{ vote }}
+            </button>
+          </div>
+          <p class="helper-text">
+            Keyboard: 1–9 to pick · Space to reveal · Esc to reset
           </p>
-        </div>
+          <div class="tickets-panel" v-show="showTickets">
+            <Tickets></Tickets>
+          </div>
+        </section>
+
+        <section class="panel results-panel" v-if="showVotes && countdown === 0">
+          <div class="panel-header">
+            <div>
+              <h3>Results</h3>
+              <p>Share the outcome with your team.</p>
+            </div>
+          </div>
+          <div class="results-grid">
+            <div class="results-card" v-if="!isPRAMode">
+              <p class="results-label">Average</p>
+              <p class="results-value">{{ averageValue }}</p>
+              <p class="results-label">Closest</p>
+              <p class="results-value">{{ closestValue }}</p>
+            </div>
+            <div class="results-card" v-if="isPRAMode && praPhase === 1 && closestValue !== null">
+              <div class="pra-row">
+                <span>Vote average</span>
+                <strong>{{ averageValue }}</strong>
+              </div>
+              <div class="pra-row">
+                <span>Vote closest</span>
+                <strong>{{ closestValue }}</strong>
+              </div>
+              <div class="pra-row select-row">
+                <span>Final chance of failure</span>
+                <select v-model="selectedFinalScore" @change="updateFinalResult">
+                  <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="results-card" v-if="isPRAMode && praPhase === 2 && praRiskScore !== null">
+              <div class="pra-row">
+                <span>Vote average</span>
+                <strong>{{ averageValue }}</strong>
+              </div>
+              <div class="pra-row">
+                <span>Vote closest</span>
+                <strong>{{ closestValue }}</strong>
+              </div>
+              <div class="pra-row select-row">
+                <span>Final impact</span>
+                <select v-model="selectedFinalScore" @change="updateFinalResult">
+                  <option v-for="score in [1,2,3,4,5]" :key="score" :value="score">{{ score }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <button v-if="!playerHasVoted() && !showVotes" class="button no-hover">
-        <span>Cast your votes</span>
-      </button>
-      <button v-if="playerHasVoted() && !showVotes" class="button" @click="showVotesClicked()">
-        <span>Show votes!</span>
-      </button>
-      <button
-          v-if="showVotes && countdown === 0"
-          class="button start"
-          @click="startNewGame()"
-      >
-        <span>{{ startGameMessage }}</span>
-      </button>
-      <button v-if="showVotes && countdown > 0" class="button no-hover">
-        <span>{{ countdown }}</span>
-      </button>
-
-      <div class="players" v-for="player in players" :key="player.id">
-        <div class="player" :class="{ voted: player.vote }">
-          <span v-if="showVotes && countdown === 0">{{ player.vote }}</span>
-        </div>
-        <div class="name">
-          <span>{{ player.name }}</span>
-        </div>
-      </div>
-
-      <div class="options" v-if="!showVotes || (showVotes && countdown !== 0)">
-        <button
-            v-for="vote in gameFormat?.values"
-            :key="`vote-${vote}`"
-            class="fib-button"
-            :class="{ current: currentVote === vote }"
-            @click="performVote(vote)"
-            :disabled="currentVote === vote || countdown > 0"
-        >
-          <span>{{ vote }}</span>
-        </button>
-      </div>
-      <div class="results-container" v-if="showVotes && countdown === 0">
-        <!-- Normal voting results (non-PRA) -->
-        <div class="results" v-if="!isPRAMode">
-          <div class="average">Average: {{ averageValue }}</div>
-          <div class="popular">Closest: {{ closestValue }}</div>
-        </div>
-
-        <!-- PRA Phase 1 Results -->
-        <div class="results pra-results" v-if="isPRAMode && praPhase === 1 && closestValue !== null">
-          <div class="pra-result-row">
-            <span class="pra-label">Vote Average:</span>
-            <span class="pra-value">{{ averageValue }}</span>
-          </div>
-          <div class="pra-result-row">
-            <span class="pra-label">Vote Closest:</span>
-            <span class="pra-value">{{ closestValue }}</span>
-          </div>
-          <div class="pra-result-row final-selection">
-            <span class="pra-label">Final Chance of Failure:</span>
-            <select v-model="selectedFinalScore" @change="updateFinalResult" class="final-score-select">
-              <option v-for="score in [1, 2, 3, 4, 5]" :key="score" :value="score">
-                {{ score }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <!-- PRA Phase 2 Results -->
-        <div class="results pra-results" v-if="isPRAMode && praPhase === 2 && praRiskScore !== null">
-          <div class="pra-result-row">
-            <span class="pra-label">Vote Average:</span>
-            <span class="pra-value">{{ averageValue }}</span>
-          </div>
-          <div class="pra-result-row">
-            <span class="pra-label">Vote Closest:</span>
-            <span class="pra-value">{{ closestValue }}</span>
-          </div>
-          <div class="pra-result-row final-selection">
-            <span class="pra-label">Final Impact:</span>
-            <select v-model="selectedFinalScore" @change="updateFinalResult" class="final-score-select">
-              <option v-for="score in [1, 2, 3, 4, 5]" :key="score" :value="score">
-                {{ score }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="tickets" v-show="showTickets">
-        <Tickets></Tickets>
-      </div>
-
-      <!-- PRA Progress Panel (Right Side) -->
-      <div class="pra-progress" v-if="isPRAMode">
-        <h3>PRA Progress</h3>
-        <div class="progress-section">
-          <div class="progress-phase" :class="{ active: praPhase === 1 && praChanceOfFailure === null, completed: praChanceOfFailure !== null && countdown === 0 }">
-            <div class="phase-header">
-              <span class="phase-number">1</span>
-              <span class="phase-title">Chance of Failure</span>
-            </div>
-            <div class="phase-result" v-if="praChanceOfFailure !== null && countdown === 0">
-              <span class="result-label">Result:</span>
-              <span class="result-value">{{ praChanceOfFailure }}</span>
-            </div>
-            <div class="phase-status" v-else-if="praPhase === 1 && praChanceOfFailure === null">
-              In Progress...
+      <aside v-if="isPRAMode" class="pra-panel">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>PRA progress</h3>
+              <p>Two-phase review</p>
             </div>
           </div>
-
-          <div class="progress-arrow">↓</div>
-
-          <div class="progress-phase" :class="{ active: praPhase === 2 && praImpact === null, completed: praImpact !== null && countdown === 0 }">
-            <div class="phase-header">
-              <span class="phase-number">2</span>
-              <span class="phase-title">Impact</span>
+          <div class="progress-section">
+            <div class="progress-phase" :class="{ active: praPhase === 1 && praChanceOfFailure === null, completed: praChanceOfFailure !== null && countdown === 0 }">
+              <div class="phase-header">
+                <span class="phase-number">1</span>
+                <span class="phase-title">Chance of failure</span>
+              </div>
+              <div class="phase-status" v-if="praChanceOfFailure === null">In progress…</div>
+              <div class="phase-result" v-else>
+                <span>Result</span>
+                <strong>{{ praChanceOfFailure }}</strong>
+              </div>
             </div>
-            <div class="phase-result" v-if="praImpact !== null && countdown === 0">
-              <span class="result-label">Result:</span>
-              <span class="result-value">{{ praImpact }}</span>
+            <div class="progress-phase" :class="{ active: praPhase === 2 && praImpact === null, completed: praImpact !== null && countdown === 0 }">
+              <div class="phase-header">
+                <span class="phase-number">2</span>
+                <span class="phase-title">Impact</span>
+              </div>
+              <div class="phase-status" v-if="praPhase === 2 && praImpact === null">
+                In progress…
+              </div>
+              <div class="phase-status" v-else-if="praChanceOfFailure === null">
+                Pending phase 1
+              </div>
+              <div class="phase-result" v-else-if="praImpact !== null">
+                <span>Result</span>
+                <strong>{{ praImpact }}</strong>
+              </div>
             </div>
-            <div class="phase-status" v-else-if="praPhase === 2 && praImpact === null">
-              In Progress...
-            </div>
-            <div class="phase-status pending" v-else-if="praChanceOfFailure === null">
-              Pending...
-            </div>
-          </div>
-
-          <div class="progress-arrow" v-if="praRiskScore !== null && countdown === 0">↓</div>
-
-          <div class="final-risk" v-if="praRiskScore !== null && countdown === 0">
-            <div class="risk-score-display">
-              <span class="risk-label">Risk Score:</span>
-              <span class="risk-score">{{ praRiskScore }}</span>
-            </div>
-            <div class="risk-class-display" :class="'risk-' + praRiskClass?.toLowerCase()">
-              {{ praRiskClass }}
+            <div class="final-risk" v-if="praRiskScore !== null && countdown === 0">
+              <div class="risk-score">
+                <span>Risk score</span>
+                <strong>{{ praRiskScore }}</strong>
+              </div>
+              <div class="risk-class" :class="'risk-' + (praRiskClass || '').toLowerCase()">
+                {{ praRiskClass }}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- PRA Legend (Left Side) -->
-      <div class="pra-legend" v-if="isPRAMode">
-        <div class="legend-section">
-          <h3>Chance of Failure</h3>
-          <p class="legend-formula">Chance of error + Frequency / 2</p>
-          <div class="legend-item">
-            <span class="legend-number">1</span>
-            <span class="legend-text"><strong>Highly Unlikely:</strong> Probability is extremely low.</span>
+        <section class="panel legend-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Legend</h3>
+              <p>Chance vs impact at a glance</p>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="legend-number">2</span>
-            <span class="legend-text"><strong>Unlikely:</strong> Small probability this risk may occur.</span>
+          <div class="legend-section">
+            <h4>Chance of failure</h4>
+            <p class="legend-formula">Chance of error + Frequency / 2</p>
+            <div class="legend-list">
+              <div class="legend-item" v-for="(label, index) in chanceLegend" :key="`chance-${label}`">
+                <span class="legend-number">{{ index + 1 }}</span>
+                <span class="legend-text">{{ label }}</span>
+              </div>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="legend-number">3</span>
-            <span class="legend-text"><strong>Possible:</strong> Moderate likelihood; may or may not happen.</span>
+          <div class="legend-section">
+            <h4>Impact</h4>
+            <div class="legend-list">
+              <div class="legend-item" v-for="(label, index) in impactLegend" :key="`impact-${label}`">
+                <span class="legend-number">{{ index + 1 }}</span>
+                <span class="legend-text">{{ label }}</span>
+              </div>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="legend-number">4</span>
-            <span class="legend-text"><strong>Likely:</strong> Significant probability this will occur.</span>
+          <div class="legend-section risk-ranges">
+            <h4>Risk classification</h4>
+            <div
+                class="risk-range-item"
+                v-for="item in riskLegend"
+                :key="item.label"
+                :class="`risk-${item.variant}`"
+            >
+              <span>{{ item.label }}</span>
+              <strong>{{ item.range }}</strong>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="legend-number">5</span>
-            <span class="legend-text"><strong>Almost Certain:</strong> Expected to occur with near certainty.</span>
-          </div>
-        </div>
-
-        <div class="legend-section">
-          <h3>Impact</h3>
-          <div class="legend-item">
-            <span class="legend-number">1</span>
-            <span class="legend-text"><strong>Negligible:</strong> Little to no impact.</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-number">2</span>
-            <span class="legend-text"><strong>Low:</strong> Only efficiency or administrative processes affected.</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-number">3</span>
-            <span class="legend-text"><strong>Moderate:</strong> Some inconvenience. Few parcels affected with workaround.</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-number">4</span>
-            <span class="legend-text"><strong>Significant:</strong> Visible business impact. Parcels delayed or need workaround. One or few depot(s) affected.</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-number">5</span>
-            <span class="legend-text"><strong>Critical:</strong> Immediate operational halt. Depot(s) can't function. Several depots or nationwide impact.</span>
-          </div>
-        </div>
-
-        <div class="legend-section risk-ranges">
-          <h3>Risk Classification Ranges</h3>
-          <div class="risk-range-item risk-low">
-            <span class="range-label">LOW</span>
-            <span class="range-value">1-6</span>
-          </div>
-          <div class="risk-range-item risk-middle">
-            <span class="range-label">MIDDLE</span>
-            <span class="range-value">7-12</span>
-          </div>
-          <div class="risk-range-item risk-high">
-            <span class="range-label">HIGH</span>
-            <span class="range-value">13-25</span>
-          </div>
-        </div>
-      </div>
+        </section>
+      </aside>
     </div>
   </div>
 </template>
@@ -325,6 +372,25 @@ const {
   praRiskClass
 } = useGameEngine();
 const showShareModal = ref(false);
+const route = useRoute();
+
+const chanceLegend = ['Highly unlikely', 'Unlikely', 'Possible', 'Likely', 'Almost certain'];
+const impactLegend = ['Negligible', 'Low', 'Moderate', 'Significant', 'Critical'];
+const riskLegend = [
+  {label: 'Low', range: '1-6', variant: 'low'},
+  {label: 'Medium', range: '7-12', variant: 'middle'},
+  {label: 'High', range: '13-25', variant: 'high'}
+];
+const roomCode = computed(() => {
+  const raw = route.params?.id;
+  return raw ? raw.toString().toUpperCase() : '----';
+});
+const roomTitle = computed(() => {
+  if (name.value) {
+    return `${name.value}'s planning session`;
+  }
+  return 'Planfree planning session';
+});
 
 let deferredPrompt: any;
 
@@ -349,7 +415,6 @@ function installPWA() {
 
 onMounted(() => {
   if (joiningAGame()) {
-    const route = useRoute();
     const newSocket = io(process.env.VUE_APP_SERVER, {
       query: {
         roomId: route.params.id,
@@ -475,677 +540,798 @@ function joiningAGame() {
 
 
 const toggleTickets = () => showTickets.value = !showTickets.value;
+
+const getInitial = (playerName: string) => {
+  if (!playerName) return '?';
+  const trimmed = playerName.trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+};
 </script>
 
 <style scoped lang="scss">
-.players {
-  user-select: none;
-  position: relative;
-  top: 5em;
-  width: 320px;
-  height: 320px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-
-  .player {
-    border-radius: 26px;
-    border: none;
-    cursor: default;
-    width: 64px;
-    height: 80px;
-    background: #f3f0f1;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-    color: #161b1f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .name {
-    margin-top: 1em;
-    text-align: center;
-    font-size: 26px;
-  }
-
-  .voted {
-    background: #54e8dd;
-  }
-}
-
-.home {
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Screen reader only */
+.sr-only {
   position: absolute;
-  top: 45%;
-  width: 320px;
-  height: 80px;
-  background: #f3f0f1;
-  border-radius: 32px;
-  text-align: center;
-  border: none;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Page layout */
+.lobby-page {
+  min-height: 100vh;
+  background: var(--gray-50, #F9FAFB);
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.lobby-shell {
+  flex: 1 1 720px;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pra-panel {
+  flex: 1 1 280px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--primary-600, #444CE7);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+  margin: 0;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: var(--gray-500, #667085);
+  margin: 2px 0 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--success-50, #ECFDF3);
+  color: var(--success-700, #027A48);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full, 9999px);
+  background: currentColor;
+}
+
+.quick-links {
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* Buttons */
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--primary-600, #444CE7);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--primary-600, #444CE7);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
-  transition: all 0.1s ease-in-out;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  color: #161b1f;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--primary-700, #3538CD);
+    border-color: var(--primary-700, #3538CD);
+  }
+
+  &:disabled {
+    background: var(--gray-100, #F2F4F7);
+    border-color: var(--gray-200, #EAECF0);
+    color: var(--gray-400, #98A2B3);
+    cursor: not-allowed;
+  }
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  color: var(--gray-700, #344054);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
 
   &:hover {
-    opacity: 0.3;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    opacity: 1;
-    box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-    inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-  }
-
-}
-
-.top-left {
-  display: flex;
-  flex-direction: row;
-  left: 20px;
-  top: 35px;
-  position: absolute;
-  gap: 5px;
-
-  .voting-on {
-    font-family: "Montserrat", sans-serif;
-    margin-left: 20px;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    word-wrap: break-word;
-    white-space: normal;
-    overflow: auto;
-    max-width: 40vw;
-    text-align: left;
+    background: var(--gray-50, #F9FAFB);
   }
 }
 
-@media only screen and (max-width: 700px) {
-  .top-left {
-    visibility: hidden;
-  }
-}
-
-.top-buttons {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  position: absolute;
-  justify-content: flex-end;
-  top: 2%;
-  right: 2%;
-  gap: 20px;
-
-  .invite {
-    position: relative;
-    user-select: none;
-    gap: 10px;
-    width: 300px;
-    height: 70px;
-    font-size: 26px;
-
-    svg {
-      position: relative;
-      left: 2px;
-      top: 3px;
-    }
-  }
-
-  .edit-name-button {
-    position: relative;
-    user-select: none;
-    height: 70px;
-    font-size: 26px;
-    background: #f3f0f1;
-    border-radius: 32px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    opacity: 0.5;
-    cursor: pointer;
-
-    &:hover {
-      opacity: 1;
-    }
-
-    &:hover::before {
-      transform: scaleX(1);
-    }
-
-    &:before {
-      content: "";
-      position: absolute;
-      display: block;
-      width: 100%;
-      height: 2px;
-      bottom: 10px;
-      right: 10px;
-      background-color: #000;
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-
-    svg {
-      position: relative;
-      left: 2px;
-      top: 3px;
-    }
-  }
-}
-
-.screen-reader-only {
-  position: absolute;
-  width: 0px;
-  overflow: hidden;
-}
-
-.copied {
-  background: #54e8dd;
-}
-
-.no-hover {
+.no-pointer {
   pointer-events: none;
 }
 
-span {
-  font-family: "Montserrat", sans-serif;
-  font-size: 26px;
-  font-weight: semibold;
-  color: #161b1f;
-  user-select: none;
-}
-
-.results-container {
-  display: flex;
-  justify-content: center;
-  position: absolute;
-  flex-wrap: wrap;
-  height: 200px;
-  gap: 30px;
-  width: 90%;
-  bottom: 5%;
-  font-size: 20px;
-  color: #54e8dd;
-
-  .results {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: #161b1f;
-    border-radius: 26px;
-    border: none;
-    width: 250px;
-    height: 100px;
-    transition: all 0.1s ease-in-out;
-    box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-    6px 6px 10px rgba(0, 0, 0, 0.2);
-
-    user-select: none;
-    font-family: "Montserrat", sans-serif;
-    font-weight: semibold;
-
-    &:focus {
-      outline: none;
-    }
-
-    .average {
-      padding: 4px;
-    }
-  }
-
-  .pra-results {
-    width: 350px;
-    height: auto;
-    padding: 20px;
-    gap: 10px;
-
-    .pra-result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(84, 232, 221, 0.2);
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      &.pra-classification {
-        margin-top: 10px;
-        padding-top: 15px;
-        border-top: 2px solid rgba(84, 232, 221, 0.4);
-        font-size: 22px;
-        font-weight: bold;
-      }
-
-      .pra-label {
-        color: #54e8dd;
-        opacity: 0.8;
-      }
-
-      .pra-value {
-        color: #54e8dd;
-        font-weight: bold;
-      }
-
-      &.risk-low .pra-value {
-        color: #4ade80;
-      }
-
-      &.risk-middle .pra-value {
-        color: #fbbf24;
-      }
-
-      &.risk-high .pra-value {
-        color: #f87171;
-      }
-    }
-  }
-}
-
-.pra-phase {
-  color: #54e8dd;
-  font-size: 18px;
-  margin-top: 5px;
-}
-
-.pra-legend {
-  position: fixed;
-  left: 20px;
-  top: 120px;
-  width: 300px;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
-  background: #f3f0f1;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  font-family: "Montserrat", sans-serif;
-  font-size: 12px;
-  z-index: 100;
-
-  h3 {
-    font-size: 16px;
-    margin: 0 0 10px 0;
-    color: #161b1f;
-    font-weight: bold;
-  }
-
-  .legend-section {
-    margin-bottom: 25px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .legend-formula {
-    font-size: 11px;
-    font-style: italic;
-    color: #666;
-    margin: -5px 0 10px 0;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    gap: 8px;
-
-    .legend-number {
-      flex-shrink: 0;
-      width: 22px;
-      height: 22px;
-      background: #54e8dd;
-      color: #161b1f;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 12px;
-    }
-
-    .legend-text {
-      flex: 1;
-      line-height: 1.4;
-      color: #161b1f;
-      font-size: 12px;
-
-      strong {
-        color: #000;
-      }
-    }
-  }
-
-  .risk-ranges {
-    .risk-range-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 15px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      font-weight: bold;
-      font-size: 14px;
-
-      &.risk-low {
-        background: #4ade80;
-        color: #fff;
-      }
-
-      &.risk-middle {
-        background: #fbbf24;
-        color: #000;
-      }
-
-      &.risk-high {
-        background: #f87171;
-        color: #fff;
-      }
-
-      .range-label {
-        font-weight: bold;
-      }
-
-      .range-value {
-        opacity: 0.9;
-      }
-    }
-  }
-}
-
-@media only screen and (max-width: 1200px) {
-  .pra-legend {
-    right: auto;
-    left: 20px;
-    width: 280px;
-    font-size: 11px;
-  }
-}
-
-@media only screen and (max-width: 900px) {
-  .pra-legend {
-    display: none;
-  }
-}
-
-.pra-progress {
-  position: fixed;
-  right: 20px;
-  top: 120px;
-  width: 280px;
-  background: #f3f0f1;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  font-family: "Montserrat", sans-serif;
-  z-index: 100;
-
-  h3 {
-    font-size: 18px;
-    margin: 0 0 20px 0;
-    color: #161b1f;
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .progress-section {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .progress-phase {
-    background: #fff;
-    border-radius: 12px;
-    padding: 15px;
-    border: 2px solid #e0e0e0;
-    transition: all 0.3s ease;
-
-    &.active {
-      border-color: #54e8dd;
-      background: rgba(84, 232, 221, 0.05);
-      box-shadow: 0 0 15px rgba(84, 232, 221, 0.2);
-    }
-
-    &.completed {
-      border-color: #4ade80;
-      background: rgba(74, 222, 128, 0.05);
-    }
-
-    .phase-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-
-      .phase-number {
-        width: 30px;
-        height: 30px;
-        background: #e0e0e0;
-        color: #161b1f;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 16px;
-        flex-shrink: 0;
-      }
-
-      .phase-title {
-        flex: 1;
-        font-size: 14px;
-        font-weight: 600;
-        color: #161b1f;
-      }
-    }
-
-    &.active .phase-header .phase-number {
-      background: #54e8dd;
-      color: #161b1f;
-    }
-
-    &.completed .phase-header .phase-number {
-      background: #4ade80;
-      color: #fff;
-    }
-
-    .phase-result {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 12px;
-      background: rgba(0, 0, 0, 0.03);
-      border-radius: 8px;
-      font-size: 13px;
-
-      .result-label {
-        color: #666;
-      }
-
-      .result-value {
-        color: #161b1f;
-        font-weight: bold;
-      }
-    }
-  }
-
-  .progress-arrow {
-    text-align: center;
-    color: #54e8dd;
-    font-size: 20px;
-    margin: -5px 0;
-  }
-
-  .final-risk-display {
-    margin-top: 20px;
-    padding: 20px;
-    background: #161b1f;
-    border-radius: 12px;
-    text-align: center;
-
-    .risk-label {
-      color: #54e8dd;
-      font-size: 12px;
-      opacity: 0.8;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .risk-value {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 8px;
-
-      &.risk-low {
-        color: #4ade80;
-      }
-
-      &.risk-middle {
-        color: #fbbf24;
-      }
-
-      &.risk-high {
-        color: #f87171;
-      }
-    }
-
-    .risk-score {
-      color: #54e8dd;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-  }
-}
-
-@media only screen and (max-width: 1400px) {
-  .pra-progress {
-    width: 240px;
-    padding: 15px;
-
-    h3 {
-      font-size: 16px;
-    }
-
-    .progress-phase .phase-header .phase-title {
-      font-size: 13px;
-    }
-  }
-}
-
-@media only screen and (max-width: 900px) {
-  .pra-progress {
-    display: none;
-  }
-}
-
-.final-score-select {
-  flex: 1;
-  padding: 8px 12px;
-  background: #161b1f;
-  color: #54e8dd;
-  border: 2px solid #54e8dd;
-  border-radius: 8px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #2a2f35;
-  }
-
-  &:focus {
-    border-color: #fff;
-  }
-
-  option {
-    background: #161b1f;
-    color: #54e8dd;
-    padding: 8px;
-  }
-}
-
-.final-selection {
-  margin-top: 15px;
-  padding-top: 15px !important;
-  border-top: 2px solid rgba(84, 232, 221, 0.4) !important;
-}
-
-.phase-label {
-  background: rgba(84, 232, 221, 0.1);
-  padding: 12px 0 !important;
-  margin-bottom: 10px;
-  border-radius: 8px;
-}
-
-.options {
-  display: flex;
-  justify-content: center;
-  position: absolute;
-  flex-wrap: wrap;
-  height: 200px;
-  gap: 30px;
-  width: 90%;
-  bottom: 5%;
-  user-select: none;
-}
-
-.fib-button {
-  display: flex;
+.outline-button {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #f3f0f1;
-  border-radius: 26px;
-  text-align: center;
-  border: none;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
   cursor: pointer;
-  width: 64px;
-  height: 70px;
-  transition: all 0.1s ease-in-out;
-  box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-  6px 6px 10px rgba(0, 0, 0, 0.2);
-  color: #161b1f;
+  transition: all 0.15s ease;
 
-  &:not(.current) {
-    &:hover {
-      opacity: 0.3;
-      box-shadow: -6px -6px 10px rgba(255, 255, 255, 0.8),
-      6px 6px 10px rgba(0, 0, 0, 0.2);
-    }
+  &:hover {
+    background: var(--gray-50, #F9FAFB);
+    border-color: var(--gray-300, #D0D5DD);
+  }
+}
 
-    &:active {
-      opacity: 1;
-      box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5),
-      inset 8px 8px 16px rgba(0, 0, 0, 0.1);
-    }
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600, #475467);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--gray-50, #F9FAFB);
   }
 
-  &.current {
-    background: #54e8dd;
+  &.danger {
+    color: var(--error-700, #B42318);
+    border-color: var(--error-500, #F04438);
+    background: var(--error-50, #FEF3F2);
+
+    &:hover {
+      background: #FEE4E2;
+    }
+  }
+}
+
+/* Cards and Panels */
+.room-card,
+.panel {
+  background: #fff;
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-xl, 16px);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.room-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.room-text {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500, #667085);
+  margin-bottom: 4px;
+}
+
+.room-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.room-heading h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+  margin: 0;
+}
+
+.room-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--gray-100, #F2F4F7);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
+}
+
+.room-description {
+  margin: 8px 0 0;
+  color: var(--gray-600, #475467);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.room-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.room-stats div {
+  background: var(--gray-50, #F9FAFB);
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px;
+}
+
+.room-stats dt {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500, #667085);
+  margin-bottom: 4px;
+}
+
+.room-stats dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.room-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Content grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.panel-header {
+  margin-bottom: 16px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.panel-header p {
+  margin: 4px 0 0;
+  color: var(--gray-500, #667085);
+  font-size: 14px;
+}
+
+/* Player list */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+  background: #fff;
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--primary-600, #444CE7);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar.reveal {
+  background: var(--primary-50, #EEF4FF);
+  color: var(--primary-700, #3538CD);
+}
+
+.player-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-copy p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-900, #101828);
+}
+
+.player-copy small {
+  font-size: 12px;
+  color: var(--gray-500, #667085);
+}
+
+.status-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--gray-100, #F2F4F7);
+  color: var(--gray-600, #475467);
+}
+
+.status-chip.ready {
+  background: var(--success-50, #ECFDF3);
+  color: var(--success-700, #027A48);
+}
+
+.empty-state {
+  padding: 20px;
+  border: 1px dashed var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--gray-50, #F9FAFB);
+  color: var(--gray-500, #667085);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Round details */
+.inline-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.cta-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.countdown-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--gray-200, #EAECF0);
+  background: var(--gray-50, #F9FAFB);
+  color: var(--gray-600, #475467);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Vote cards */
+.vote-panel .vote-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.vote-chip {
+  min-width: 48px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--gray-300, #D0D5DD);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700, #344054);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary-300, #A4BCFD);
+    background: var(--primary-25, #F5F8FF);
+  }
+
+  &.selected {
+    border-color: var(--primary-600, #444CE7);
+    background: var(--primary-50, #EEF4FF);
+    color: var(--primary-700, #3538CD);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.helper-text {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--gray-500, #667085);
+}
+
+.tickets-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200, #EAECF0);
+}
+
+/* Results */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.results-card {
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  background: var(--gray-50, #F9FAFB);
+}
+
+.results-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500, #667085);
+}
+
+.results-value {
+  margin: 4px 0 12px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+/* PRA specific */
+.pra-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--gray-700, #344054);
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--gray-100, #F2F4F7);
+  }
+
+  strong {
+    font-weight: 600;
+    color: var(--gray-900, #101828);
+  }
+}
+
+.pra-row select {
+  padding: 6px 10px;
+  border: 1px solid var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-md, 8px);
+  background: #fff;
+  font-size: 14px;
+  color: var(--gray-700, #344054);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-300, #A4BCFD);
+    box-shadow: 0 0 0 4px var(--primary-100, #E0EAFF);
+  }
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-phase {
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--gray-200, #EAECF0);
+  padding: 12px;
+  background: #fff;
+
+  &.active {
+    border-color: var(--primary-300, #A4BCFD);
+    background: var(--primary-25, #F5F8FF);
+  }
+
+  &.completed {
+    border-color: var(--success-500, #12B76A);
+    background: var(--success-50, #ECFDF3);
+  }
+}
+
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.phase-number {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--primary-100, #E0EAFF);
+  color: var(--primary-700, #3538CD);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.phase-status {
+  font-size: 13px;
+  color: var(--gray-500, #667085);
+}
+
+.phase-result {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--gray-600, #475467);
+
+  strong {
+    color: var(--gray-900, #101828);
+  }
+}
+
+.final-risk {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200, #EAECF0);
+}
+
+.final-risk .risk-score {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
+
+  strong {
+    font-size: 18px;
+    color: var(--gray-900, #101828);
+  }
+}
+
+.final-risk .risk-class {
+  margin-top: 8px;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 14px;
+  font-weight: 600;
+
+  &.risk-low {
+    background: var(--success-50, #ECFDF3);
+    color: var(--success-700, #027A48);
+  }
+
+  &.risk-middle {
+    background: var(--warning-50, #FFFAEB);
+    color: var(--warning-700, #B54708);
+  }
+
+  &.risk-high {
+    background: var(--error-50, #FEF3F2);
+    color: var(--error-700, #B42318);
+  }
+}
+
+/* Legend panel */
+.legend-section {
+  &:not(:last-child) {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gray-200, #EAECF0);
+  }
+}
+
+.legend-panel h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900, #101828);
+}
+
+.legend-formula {
+  font-size: 12px;
+  color: var(--gray-500, #667085);
+  margin-bottom: 12px;
+}
+
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-number {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--gray-100, #F2F4F7);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700, #344054);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legend-text {
+  font-size: 13px;
+  color: var(--gray-600, #475467);
+}
+
+.risk-ranges .risk-range-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  font-weight: 500;
+
+  &:not(:last-child) {
+    margin-bottom: 6px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  &.risk-low {
+    background: var(--success-50, #ECFDF3);
+    color: var(--success-700, #027A48);
+  }
+
+  &.risk-middle {
+    background: var(--warning-50, #FFFAEB);
+    color: var(--warning-700, #B54708);
+  }
+
+  &.risk-high {
+    background: var(--error-50, #FEF3F2);
+    color: var(--error-700, #B42318);
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .lobby-page {
+    padding: 16px 12px 32px;
+  }
+
+  .lobby-header {
+    align-items: flex-start;
+  }
+
+  .room-card {
+    flex-direction: column;
+  }
+
+  .room-stats {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .pra-panel {
+    max-width: none;
+    width: 100%;
   }
 }
 </style>

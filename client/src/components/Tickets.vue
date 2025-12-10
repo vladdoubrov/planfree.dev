@@ -1,31 +1,38 @@
 <template>
-  <div class="tickets-wrapper">
-    <PFInput v-model="ticketName" @completed="addedTicket" placeholder="Add issue title"></PFInput>
-    <div class="tickets-container">
-      <ul>
-        <li v-for="ticket in tickets">
-          <div class="ticket" @click="voteOn(ticket)">
-            <h4 :class="{ voting: ticket.votingOn }">{{ ticket.name }} <span v-if="ticket.score">{{
-                ticket.score
-              }}</span></h4>
-            <PFLittleButton class="delete-button" type="delete" @clicked="deleteTicket(ticket.id)"></PFLittleButton>
-          </div>
-        </li>
-      </ul>
+  <div class="tickets">
+    <div class="ticket-input">
+      <PFInput v-model="ticketName" @completed="addedTicket" placeholder="Add issue title"></PFInput>
+    </div>
+    <div class="ticket-list" v-if="tickets && tickets.length">
+      <div
+          v-for="ticket in tickets"
+          :key="ticket.id"
+          class="ticket-item"
+          :class="{ active: ticket.votingOn }"
+          @click="voteOn(ticket)"
+      >
+        <div class="ticket-content">
+          <span class="ticket-name">{{ ticket.name }}</span>
+          <span v-if="ticket.score" class="ticket-score">{{ ticket.score }}</span>
+        </div>
+        <PFLittleButton type="delete" @clicked="deleteTicket(ticket.id)"></PFLittleButton>
+      </div>
+    </div>
+    <div class="empty-state" v-else>
+      <p>No issues yet. Add one to get started.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-
 import PFInput from "@/components/Input.vue";
-import {ref} from "vue";
-import {v4 as uuidv4} from 'uuid';
-import {useTickets} from "@/composables/useTickets";
+import { ref } from "vue";
+import { v4 as uuidv4 } from 'uuid';
+import { useTickets } from "@/composables/useTickets";
 import Ticket from "@/view-models/tickets";
 import PFLittleButton from "@/components/LittleButton.vue";
 
-const {tickets, ticketUpdated} = useTickets();
+const { tickets, ticketUpdated } = useTickets();
 
 let ticketName = ref('');
 
@@ -52,67 +59,87 @@ function voteOn(ticket: Ticket) {
   for (const value of tickets.value) {
     value.votingOn = false;
   }
-
   ticket.votingOn = true;
   ticketUpdated();
 }
 </script>
 
 <style scoped lang="scss">
-.tickets-wrapper {
-  position: fixed;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 50%;
-  width: 360px;
-  text-align: left;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-}
-
-.tickets-container {
+.tickets {
   display: flex;
   flex-direction: column;
-  overflow: auto;
-  height: 70%;
-  background: #f3f0f1;
+  gap: 16px;
 }
 
-.ticket {
-  cursor: pointer;
+.ticket-list {
   display: flex;
-  text-align: left;
-  align-items: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  gap: 10px;
-  font-family: "Montserrat", sans-serif;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .delete-button {
-    visibility: hidden;
-  }
+.ticket-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--gray-200, #EAECF0);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: all 0.15s ease;
 
   &:hover {
-    .delete-button {
-      visibility: visible;
-    }
+    border-color: var(--gray-300, #D0D5DD);
+    background: var(--gray-50, #F9FAFB);
   }
 
-  .voting {
-    text-decoration: underline;
-    text-decoration-color: #54e8dd;
-    text-decoration-thickness: 2px;
+  &.active {
+    border-color: var(--primary-300, #A4BCFD);
+    background: var(--primary-25, #F5F8FF);
   }
 }
 
-span {
-  background: #54e8dd;
-  padding: 5px;
-  border-radius: 50%;
-  color: black;
-  height: 18px;
-  display: inline-block;
+.ticket-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticket-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  background: var(--primary-50, #EEF4FF);
+  color: var(--primary-700, #3538CD);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-full, 9999px);
+}
+
+.empty-state {
+  padding: 24px;
   text-align: center;
+  background: var(--gray-50, #F9FAFB);
+  border: 1px dashed var(--gray-300, #D0D5DD);
+  border-radius: var(--radius-lg, 12px);
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--gray-500, #667085);
+  }
 }
 </style>
