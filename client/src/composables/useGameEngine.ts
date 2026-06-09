@@ -23,6 +23,17 @@ const praRiskClass = ref<string | null>(null);
 
 export function useGameEngine() {
     function setSocket(newSocket: any) {
+        if (
+            socket.value &&
+            socket.value !== newSocket &&
+            typeof socket.value.disconnect === "function"
+        ) {
+            if (typeof socket.value.removeAllListeners === "function") {
+                socket.value.removeAllListeners();
+            }
+            socket.value.disconnect();
+        }
+
         socket.value = newSocket;
         setupSocketHandlers();
     }

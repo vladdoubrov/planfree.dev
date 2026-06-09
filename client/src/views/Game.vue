@@ -409,14 +409,12 @@ async function dismissModal() {
 }
 
 onMounted(() => {
-  if (joiningAGame()) {
-    const newSocket = io(process.env.VUE_APP_SERVER, {
-      query: {
-        roomId: route.params.id,
-      },
-    });
-    setSocket(newSocket);
-  }
+  const newSocket = io(process.env.VUE_APP_SERVER, {
+    query: {
+      roomId: route.params.id,
+    },
+  });
+  setSocket(newSocket);
 
   const storedName = localStorage.getItem("name");
   if (storedName) {
@@ -500,13 +498,24 @@ function resetPRASession() {
 }
 
 function emitName(name: string) {
-  socket.value.emit("name", name);
+  const displayName = name.trim();
+  if (!displayName) {
+    return;
+  }
+
+  socket.value.emit("name", displayName);
 }
 
 function enteredName(updatedName: string) {
-  name.value = updatedName;
-  emitName(updatedName);
-  localStorage.setItem("name", updatedName);
+  const displayName = updatedName.trim();
+  if (!displayName) {
+    modal.value = true;
+    return;
+  }
+
+  name.value = displayName;
+  emitName(displayName);
+  localStorage.setItem("name", displayName);
   modal.value = false;
 }
 
@@ -518,15 +527,6 @@ function playerHasVoted() {
 
 function copyToClipboard() {
   showShareModal.value = true;
-}
-
-function joiningAGame() {
-  const currentState = socket.value;
-  return (
-      currentState &&
-      Object.keys(currentState).length === 0 &&
-      currentState.constructor === Object
-  );
 }
 
 const getInitial = (playerName: string) => {

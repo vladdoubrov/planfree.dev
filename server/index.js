@@ -26,6 +26,8 @@ let players = [];
 let tickets = [];
 let gameType = [];
 let praSession = []; // Track PRA sessions per room: { roomId, phase: 1|2, chanceOfFailure: null|number, impact: null|number }
+const roomCleanupTimers = new Map();
+const roomCleanupDelayMs = 30000;
 
 let gameTypes = [
     { name: 'Fibonacci', values: [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?'] },
@@ -38,6 +40,9 @@ let gameTypes = [
 io.on('connection', (socket) => {
     console.log('A user connected', socket.id);
     let roomId = socket.handshake.query['roomId'];
+    if (Array.isArray(roomId)) {
+        roomId = roomId[0];
+    }
     if (!roomId) {
         roomId = short.generate();
         socket.emit('room', roomId);
@@ -45,33 +50,42 @@ io.on('connection', (socket) => {
     socket.emit('gameTypes', gameTypes)
     socket.join(roomId);
 
-    players.push({ id: socket.id, name: '', roomId: roomId });
-    gameType.push({ id: socket.id, gameType: gameTypes[0], roomId: roomId });
-
-    // Initialize PRA session if it doesn't exist for this room
-    if (!praSession.find(p => p.roomId === roomId)) {
-        praSession.push({ roomId: roomId, phase: 1, chanceOfFailure: null, impact: null });
-    }
+    cancelRoomCleanup(roomId);
+    ensureRoomState(roomId);
 
     socket.on('name', (name) => {
+        const displayName = normalizeName(name);
         let player = players.find(p => p.id == socket.id);
-        console.log(`User entered name ${name}`);
+        if (!displayName) {
+            if (player) {
+                console.log(`Removing player ${player.name} after blank name update`);
+                players = players.filter(player => player.id !== socket.id);
+                updateClientsInRoom(roomId);
+            }
+            return;
+        }
+
+        console.log(`User entered name ${displayName}`);
         if (player) {
-            console.log(`Changing name from ${player.name} to ${name}`)
-            player.name = name;
+            console.log(`Changing name from ${player.name} to ${displayName}`)
+            player.name = displayName;
+        } else {
+            players.push({ id: socket.id, name: displayName, roomId: roomId });
         }
         updateClientsInRoom(roomId);
     });
 
     socket.on('vote', (vote) => {
         let player = players.find(p => p.id == socket.id);
-        if (player) {
-            player.vote = vote;
+        if (!player || !hasName(player.name)) {
+            return;
         }
+
+        player.vote = vote;
         console.log(`Player ${player.name} voted ${player.vote}`);
 
-        const playersInRoom = players.filter(p => p.roomId == roomId);
-        if (playersInRoom.every(p => p.vote)) {
+        const playersInRoom = getPlayersInRoom(roomId);
+        if (playersInRoom.length > 0 && playersInRoom.every(hasVote)) {
             showVotes(roomId);
         }
         updateClientsInRoom(roomId);
@@ -86,7 +100,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('gameTypeChanged', (newGameType) => {
-        const roomGameTypeEntry = gameType.find(p => p.roomId == roomId);
+        const roomGameTypeEntry = getRoomGameTypeEntry(roomId);
         const wasNotPRA = !roomGameTypeEntry.gameType?.isPRA;
         const isNowPRA = newGameType?.isPRA;
 
@@ -104,7 +118,7 @@ io.on('connection', (socket) => {
         }
 
         // Reset all player votes when game type changes
-        const roomPlayers = players.filter(p => p.roomId == roomId);
+        const roomPlayers = getPlayersInRoom(roomId);
         roomPlayers.forEach(p => p.vote = undefined);
 
         updateClientsInRoom(roomId);
@@ -174,7 +188,7 @@ io.on('connection', (socket) => {
         roomPRA.impact = null;
 
         // Reset all player votes
-        const roomPlayers = players.filter(p => p.roomId == roomId);
+        const roomPlayers = getPlayersInRoom(roomId);
         roomPlayers.forEach(p => p.vote = undefined);
 
         console.log(`PRA Session reset for room ${roomId}`);
@@ -185,9 +199,14 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         const player = players.find(player => player.id === socket.id);
-        console.log(`Player ${player.name} has disconnected`);
+        if (player) {
+            console.log(`Player ${player.name} has disconnected`);
+        } else {
+            console.log(`Socket ${socket.id} disconnected before choosing a name`);
+        }
         players = players.filter(player => player.id !== socket.id);
         updateClientsInRoom(roomId);
+        scheduleRoomCleanup(roomId);
     });
 
     socket.on('pong', () => {
@@ -196,10 +215,84 @@ io.on('connection', (socket) => {
     })
 });
 
+function normalizeName(name) {
+    if (typeof name !== 'string') {
+        return '';
+    }
+
+    return name.trim().slice(0, 25);
+}
+
+function hasName(name) {
+    return typeof name === 'string' && name.trim().length > 0;
+}
+
+function hasVote(player) {
+    return player.vote !== null && player.vote !== undefined;
+}
+
+function getPlayersInRoom(roomId) {
+    return players.filter(p => p.roomId == roomId && hasName(p.name));
+}
+
+function ensureRoomState(roomId) {
+    if (!gameType.find(p => p.roomId == roomId)) {
+        gameType.push({ gameType: gameTypes[0], roomId: roomId });
+    }
+
+    if (!praSession.find(p => p.roomId === roomId)) {
+        praSession.push({ roomId: roomId, phase: 1, chanceOfFailure: null, impact: null });
+    }
+}
+
+function getRoomGameTypeEntry(roomId) {
+    ensureRoomState(roomId);
+    return gameType.find(p => p.roomId == roomId);
+}
+
+function getRoomGameType(roomId) {
+    return getRoomGameTypeEntry(roomId).gameType ?? gameTypes[0];
+}
+
+function cancelRoomCleanup(roomId) {
+    const timer = roomCleanupTimers.get(roomId);
+    if (!timer) {
+        return;
+    }
+
+    clearTimeout(timer);
+    roomCleanupTimers.delete(roomId);
+}
+
+function scheduleRoomCleanup(roomId) {
+    if (roomCleanupTimers.has(roomId)) {
+        return;
+    }
+
+    const timer = setTimeout(() => {
+        roomCleanupTimers.delete(roomId);
+        cleanupRoomIfEmpty(roomId);
+    }, roomCleanupDelayMs);
+
+    roomCleanupTimers.set(roomId, timer);
+}
+
+function cleanupRoomIfEmpty(roomId) {
+    const room = io.sockets.adapter.rooms.get(roomId);
+    if (room && room.size > 0) {
+        return;
+    }
+
+    players = players.filter(player => player.roomId !== roomId);
+    tickets = tickets.filter(ticket => ticket.roomId !== roomId);
+    gameType = gameType.filter(type => type.roomId !== roomId);
+    praSession = praSession.filter(session => session.roomId !== roomId);
+}
+
 function updateClientsInRoom(roomId) {
-    const roomPlayers = players.filter(p => p.roomId == roomId);
+    const roomPlayers = getPlayersInRoom(roomId);
     const roomTickets = tickets.filter(p => p.roomId == roomId);
-    const roomGameType = gameType.find(p => p.roomId == roomId).gameType ?? gameTypes[0];
+    const roomGameType = getRoomGameType(roomId);
     const roomPRA = praSession.find(p => p.roomId === roomId);
     io.to(roomId).emit('update', {
         players: roomPlayers,
@@ -210,9 +303,9 @@ function updateClientsInRoom(roomId) {
 }
 
 function restartGame(roomId) {
-    const roomPlayers = players.filter(p => p.roomId == roomId);
+    const roomPlayers = getPlayersInRoom(roomId);
     const roomTickets = tickets.filter(p => p.roomId == roomId);
-    const roomGameType = gameType.find(p => p.roomId == roomId).gameType ?? gameTypes[0];
+    const roomGameType = getRoomGameType(roomId);
     const roomPRA = praSession.find(p => p.roomId === roomId);
 
     roomPlayers.forEach(p => p.vote = undefined); // reset all the player's votes
@@ -266,14 +359,14 @@ function logRooms() {
     const rooms = players.map(e => e.roomId);
     if (rooms) {
         for (const room of rooms.filter((val, i, arr) => arr.indexOf(val) == i)) {
-            const playersInRoom = players.filter(p => p.roomId == room).map(p => p.name);
+            const playersInRoom = getPlayersInRoom(room).map(p => p.name);
             console.log(`Room: ${room} - Players: ${playersInRoom.join(", ")}`);
         }
     }
 }
 
 function showVotes(roomId) {
-    const roomGameType = gameType.find(p => p.roomId == roomId).gameType;
+    const roomGameType = getRoomGameType(roomId);
     const isPRA = roomGameType.isPRA;
 
     if (isPRA) {
@@ -284,6 +377,7 @@ function showVotes(roomId) {
     const roomTickets = tickets.filter(p => p.roomId == roomId);
     // find the text in the gametype where the index is the closest
     let closest = 0;
+    let avg;
     const average = getAverage(roomId);
     const fib = roomGameType.values
     let upwards = Math.abs(fib.find(p => p >= average)- average);
@@ -366,12 +460,12 @@ function showPRAVotes(roomId) {
 }
 
 function getAverage(roomId) {
-    const roomPlayers = players.filter(p => p.roomId == roomId);
-    const roomGameType = gameType.find(p => p.roomId == roomId).gameType
+    const roomPlayers = getPlayersInRoom(roomId);
+    const roomGameType = getRoomGameType(roomId);
     let count = 0;
     let total = 0;
     for (const player of roomPlayers) {
-        if (player.vote && player.vote !== "?") {
+        if (hasVote(player) && player.vote !== "?") {
             // get the current index of the vote
             const index = roomGameType.values.indexOf(player.vote);
             let numberValue = Number(player.vote);
