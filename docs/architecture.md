@@ -51,7 +51,7 @@ The server keeps four process-global state collections:
 Key server decisions:
 
 - Socket.IO rooms are the broadcast boundary. Every update is emitted with `io.to(roomId)`.
-- State is in memory only. There is no database, persistence, room cleanup, or recovery after restart.
+- State is in memory only. There is no database, persistence, or recovery after restart; empty room cleanup is also process-local.
 - The server owns score calculation and ticket scoring. Clients emit votes and controls, then render the server's results.
 - `updateClientsInRoom(roomId)` sends a full room snapshot through the `update` event.
 - A 20 second interval broadcasts `ping` and logs active rooms. Clients respond with `pong`.
@@ -92,8 +92,8 @@ PRA mode uses the same socket room infrastructure but changes the scoring lifecy
 
 ## Known Constraints
 
-- No automated room expiration or memory cleanup exists.
+- Empty rooms are cleaned up after a short delay.
 - Disconnects remove players immediately.
-- The server assumes at least one valid counted vote when calculating averages.
+- Average calculation ignores `?` and invalid votes, and handles rounds with no counted votes.
 - The CircleCI config currently only checks out the repo and echoes text.
 - The client route table does not define a `/privacy` route, while `Home.vue` attempts to navigate there. The landing site has `/privacy-policy`.

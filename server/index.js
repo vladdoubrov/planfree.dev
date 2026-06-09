@@ -81,7 +81,13 @@ io.on('connection', (socket) => {
             return;
         }
 
-        player.vote = vote;
+        const roomGameType = getRoomGameType(roomId);
+        const formattedVote = getKnownVoteValue(vote, roomGameType);
+        if (formattedVote === undefined) {
+            return;
+        }
+
+        player.vote = formattedVote;
         console.log(`Player ${player.name} voted ${player.vote}`);
 
         const playersInRoom = getPlayersInRoom(roomId);
@@ -375,50 +381,33 @@ function showVotes(roomId) {
     }
 
     const roomTickets = tickets.filter(p => p.roomId == roomId);
-    // find the text in the gametype where the index is the closest
-    let closest = 0;
-    let avg;
     const average = getAverage(roomId);
-    const fib = roomGameType.values
-    let upwards = Math.abs(fib.find(p => p >= average)- average);
-    let downWards = Math.abs(fib.findLast(p => p <= average) - average);
-    // the game type is not numeric use indexes instead
-    if(isNaN(upwards)){
-        upwards = fib.find((v, k) => k >= average);
-        downWards = fib.findLast((v, k) => k <= average);
-        if(upwards < downWards){
-            closest = fib.find((v,k) => k >= average);
-        }
-        else{
-            closest = fib.findLast((v,k) => k <= average);
-        }
-        avg = fib[Math.floor(average)];
-    }
-    else
-    {
-        if(upwards < downWards){
-            closest = fib.find(p => p >= average);
-        }
-        else{
-            closest = fib.findLast(p => p <= average);
-        }
-        avg = average;
-    }
+    const closest = getClosestValue(roomGameType, average);
+    const averageDisplay = getAverageDisplayValue(roomGameType, average);
 
-    if (roomTickets.length>0) {
+    if (closest !== null && roomTickets.length > 0) {
         const ticket = roomTickets.find(f => f.votingOn);
         if (ticket) {
             ticket.score = closest;
         }
     }
 
-    io.to(roomId).emit('show', { average: avg, closest: closest });
+    io.to(roomId).emit('show', { average: averageDisplay, closest: closest ?? '?' });
 }
 
 function showPRAVotes(roomId) {
     const roomPRA = praSession.find(p => p.roomId === roomId);
+    if (!roomPRA) {
+        return;
+    }
+
     const average = getAverage(roomId);
+    if (average === null) {
+        return;
+    }
+
     const closest = Math.round(average);
+    const averageDisplay = formatAverage(average);
 
     if (roomPRA.phase === 1) {
         // First vote: Chance of Failure
@@ -426,7 +415,7 @@ function showPRAVotes(roomId) {
         console.log(`PRA Phase 1 complete - Chance of Failure: ${closest}`);
         io.to(roomId).emit('praPhase1Complete', {
             chanceOfFailure: closest,
-            average: average
+            average: averageDisplay
         });
     } else if (roomPRA.phase === 2) {
         // Second vote: Impact
@@ -454,7 +443,7 @@ function showPRAVotes(roomId) {
             impact: roomPRA.impact,
             riskScore: riskScore,
             riskClass: riskClass,
-            averageImpact: average
+            averageImpact: averageDisplay
         });
     }
 }
@@ -465,17 +454,101 @@ function getAverage(roomId) {
     let count = 0;
     let total = 0;
     for (const player of roomPlayers) {
-        if (hasVote(player) && player.vote !== "?") {
-            // get the current index of the vote
-            const index = roomGameType.values.indexOf(player.vote);
-            let numberValue = Number(player.vote);
-            if (isNaN(numberValue)) {
-                numberValue = index;
+        if (hasVote(player)) {
+            const voteValue = getVoteValue(player.vote, roomGameType);
+            if (voteValue === null) {
+                continue;
             }
 
-            total += parseInt(numberValue);
+            total += voteValue;
             count++;
         }
     }
+
+    if (count === 0) {
+        return null;
+    }
+
     return total / count;
+}
+
+function getKnownVoteValue(vote, roomGameType) {
+    return roomGameType.values.find(value => String(value) === String(vote));
+}
+
+function getVoteValue(vote, roomGameType) {
+    if (vote === "?") {
+        return null;
+    }
+
+    if (typeof vote === 'string' && vote.trim() === '') {
+        return null;
+    }
+
+    const numberValue = Number(vote);
+    if (Number.isFinite(numberValue)) {
+        return numberValue;
+    }
+
+    const index = roomGameType.values.findIndex(value => value === vote);
+    return index === -1 ? null : index;
+}
+
+function getClosestValue(roomGameType, average) {
+    if (average === null) {
+        return null;
+    }
+
+    const values = roomGameType.values
+        .map((value, index) => ({
+            value: value,
+            score: isNumericVoteValue(value) ? Number(value) : index
+        }))
+        .filter(item => item.value !== "?" && Number.isFinite(item.score));
+
+    if (values.length === 0) {
+        return null;
+    }
+
+    return values.reduce((closest, item) => {
+        const closestDistance = Math.abs(closest.score - average);
+        const itemDistance = Math.abs(item.score - average);
+        if (itemDistance < closestDistance) {
+            return item;
+        }
+
+        if (itemDistance === closestDistance && item.score < closest.score) {
+            return item;
+        }
+
+        return closest;
+    }).value;
+}
+
+function getAverageDisplayValue(roomGameType, average) {
+    if (average === null) {
+        return 'N/A';
+    }
+
+    if (!isNumericGameType(roomGameType)) {
+        const index = Math.floor(average);
+        return roomGameType.values[index] ?? 'N/A';
+    }
+
+    return formatAverage(average);
+}
+
+function formatAverage(average) {
+    const formattedAverage = Number(average.toFixed(2));
+    return Object.is(formattedAverage, -0) ? 0 : formattedAverage;
+}
+
+function isNumericGameType(roomGameType) {
+    return roomGameType.values
+        .filter(value => value !== "?")
+        .every(isNumericVoteValue);
+}
+
+function isNumericVoteValue(value) {
+    return Number.isFinite(Number(value));
 }

@@ -57,7 +57,10 @@ Non-PRA formats:
 
 - Numeric votes are averaged directly.
 - Non-numeric formats, such as T-Shirt, use the vote index in the format values array for averaging.
+- Numeric average results are emitted rounded to two decimal places for display.
+- Closest-card scoring uses the unrounded average.
 - `?` is ignored in average calculation.
+- If every vote is ignored, the server emits `average: "N/A"` and does not score the current ticket.
 - The current ticket score is set to the closest value in the selected format.
 
 PRA format:
